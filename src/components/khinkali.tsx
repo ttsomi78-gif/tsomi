@@ -24,6 +24,30 @@ export function KhinkaliIcon({ className = "" }: { className?: string }) {
   );
 }
 
+/* Line-art shopper tote with a khachapuri print — the TSOMI bag */
+export function ToteIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 120 140"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="4.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* handle */}
+      <path d="M38 50 C 38 18 82 18 82 50" />
+      {/* bag body */}
+      <path d="M24 50 L96 50 L104 122 C 80 132 40 132 16 122 Z" />
+      {/* khachapuri print */}
+      <path d="M38 88 C 48 74 72 74 82 88 C 72 102 48 102 38 88 Z" />
+      <circle cx="60" cy="88" r="5" />
+    </svg>
+  );
+}
+
 /* Line-art Adjarian khachapuri — the boat, the cheese, the yolk */
 export function KhachapuriIcon({ className = "" }: { className?: string }) {
   return (

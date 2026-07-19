@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Noto_Sans_Georgian } from "next/font/google";
+import { Archivo, Marcellus, Noto_Serif_Georgian } from "next/font/google";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -7,15 +7,22 @@ const archivo = Archivo({
   subsets: ["latin"],
 });
 
-const notoGeorgian = Noto_Sans_Georgian({
+/* Serif display face — closest Google match to the TSOMI logotype lettering */
+const marcellus = Marcellus({
+  variable: "--font-marcellus",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const notoGeorgian = Noto_Serif_Georgian({
   variable: "--font-noto-georgian",
   subsets: ["georgian"],
 });
 
 export const metadata: Metadata = {
-  title: "TSOMI — ცომი | Georgian Streetwear",
+  title: "TSOMI — ცომი · Made in Georgia",
   description:
-    "TSOMI (ცომი) — streetwear raised on khinkali and khachapuri. Georgian dough culture, worn daily.",
+    "TSOMI (ცომი) — dough, worn daily. Khachapuri shoppers and khinkali tees, made in Georgia.",
 };
 
 export default function RootLayout({
@@ -26,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${archivo.variable} ${notoGeorgian.variable} bg-cream text-ink antialiased`}
+        className={`${archivo.variable} ${marcellus.variable} ${notoGeorgian.variable} bg-cream text-ink antialiased`}
       >
         {children}
       </body>

@@ -1,10 +1,11 @@
 const items = [
   "TSOMI",
   "ცომი",
-  "KHINKALI",
-  "ხინკალი",
+  "MADE IN GEORGIA",
   "KHACHAPURI",
   "ხაჭაპური",
+  "KHINKALI",
+  "ხინკალი",
   "SUPRA",
   "სუფრა",
 ];
@@ -15,12 +16,18 @@ function Row() {
       {items.map((item) => (
         <span
           key={item}
-          className="flex items-center gap-6 pr-6 text-lg font-black uppercase tracking-wider"
+          className="flex items-center gap-6 pr-6 text-lg uppercase tracking-[0.15em]"
         >
-          <span className={/[ა-ჰ]/.test(item) ? "font-georgian" : undefined}>
+          <span
+            className={
+              /[ა-ჰ]/.test(item) ? "font-georgian" : "font-display"
+            }
+          >
             {item}
           </span>
-          <span className="text-terracotta">✦</span>
+          <span aria-hidden="true" className="text-sm text-gold">
+            ◆
+          </span>
         </span>
       ))}
     </div>
@@ -29,7 +36,7 @@ function Row() {
 
 export function Marquee() {
   return (
-    <div className="overflow-hidden border-y-2 border-ink bg-ink py-3 text-cream">
+    <div className="overflow-hidden bg-terracotta py-3 text-cream">
       <div className="flex w-max animate-marquee">
         <Row />
         <div aria-hidden="true" className="flex shrink-0">

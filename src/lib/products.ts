@@ -1,42 +1,53 @@
 export type Product = {
   id: string;
   name: string;
+  georgian: string;
   price: number; // GEL (₾)
-  tee: "black" | "cream";
-  accent: string;
+  kind: "tee" | "tote";
+  base: "black" | "white" | "canvas";
+  print: "khinkali" | "khachapuri" | "frame" | "khachapuri-trio";
   tag?: string;
 };
 
-/* Placeholder drop — replace with the real catalog when it lands */
+/* The current drop — matched to the pieces on the feed */
 export const featuredProducts: Product[] = [
   {
-    id: "khinkali-reader",
-    name: "Khinkali Reader Tee",
-    price: 89,
-    tee: "black",
-    accent: "#c99c8c",
-    tag: "New",
+    id: "khachapuri-shopper",
+    name: "Khachapuri Shopper",
+    georgian: "ხაჭაპურის შოპერი",
+    price: 69,
+    kind: "tote",
+    base: "canvas",
+    print: "khachapuri-trio",
+    tag: "Icon",
   },
   {
-    id: "leopard-khinkali",
-    name: "Leopard Khinkali Tee",
-    price: 95,
-    tee: "black",
-    accent: "#d9a441",
+    id: "khinkali-street",
+    name: "Khinkali Street Tee",
+    georgian: "ხინკალი",
+    price: 89,
+    kind: "tee",
+    base: "white",
+    print: "khinkali",
+    tag: "New",
   },
   {
     id: "mr-khachapuri",
     name: "Mr. Khachapuri Tee",
+    georgian: "ბატონი ხაჭაპური",
     price: 89,
-    tee: "cream",
-    accent: "#bc5a2e",
+    kind: "tee",
+    base: "black",
+    print: "khachapuri",
     tag: "Best seller",
   },
   {
-    id: "supra-club",
-    name: "Supra Club Tee",
-    price: 85,
-    tee: "black",
-    accent: "#77784f",
+    id: "gallery-tee",
+    name: "Gallery Back-Print Tee",
+    georgian: "გალერეა",
+    price: 95,
+    kind: "tee",
+    base: "black",
+    print: "frame",
   },
 ];

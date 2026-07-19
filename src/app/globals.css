@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* TSOMI palette — warm plaster, wood, black tees, muted accents */
-  --color-cream: #f4eee2;
-  --color-sand: #e9dfcb;
-  --color-tan: #d6c3a3;
-  --color-ink: #1b1712;
-  --color-coal: #2a251e;
-  --color-terracotta: #bc5a2e;
-  --color-olive: #77784f;
-  --color-mustard: #d9a441;
-  --color-rose: #c99c8c;
-  --color-teal: #33695f;
+  /* TSOMI brand palette — warm plaster, craft paper, and the four logo colors */
+  --color-cream: #f6efe1;
+  --color-blush: #f2e1d2;
+  --color-sand: #eaddc6;
+  --color-tan: #d2bd9c;
+  --color-ink: #27211a;
+  --color-terracotta: #b34e28;
+  --color-brick: #8f3a1e;
+  --color-green: #3d5a45;
+  --color-pine: #324a3a;
+  --color-navy: #2e4468;
+  --color-gold: #b3862f;
+  --color-yolk: #e59a2f;
 
-  --font-display: var(--font-archivo), sans-serif;
-  --font-georgian: var(--font-noto-georgian), sans-serif;
+  --font-sans: var(--font-archivo), sans-serif;
+  --font-display: var(--font-marcellus), serif;
+  --font-georgian: var(--font-noto-georgian), serif;
 
   --animate-marquee: marquee 28s linear infinite;
 
@@ -35,7 +38,7 @@ html {
 body {
   background: var(--color-cream);
   color: var(--color-ink);
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
 }
 
 /* offset anchored sections below the sticky header */
