@@ -1,5 +1,7 @@
+import Image from "next/image";
 import { featuredProducts } from "@/lib/products";
-import { ProductArt } from "./product-art";
+
+const imageSizes = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 
 export function Products() {
   return (
@@ -19,16 +21,28 @@ export function Products() {
             key={product.id}
             className="group overflow-hidden rounded-2xl border border-tan/60 bg-blush"
           >
-            <div className="relative p-6">
+            <div className="relative aspect-4/5 overflow-hidden">
               {product.tag && (
                 <span className="absolute left-4 top-4 z-10 rounded-full bg-terracotta px-3 py-1 text-xs font-bold uppercase tracking-wide text-cream">
                   {product.tag}
                 </span>
               )}
-              <ProductArt
-                product={product}
-                className="w-full transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-1"
+              <Image
+                src={product.image}
+                alt={product.alt}
+                fill
+                sizes={imageSizes}
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
+              {product.hoverImage && (
+                <Image
+                  src={product.hoverImage}
+                  alt=""
+                  fill
+                  sizes={imageSizes}
+                  className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                />
+              )}
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-tan/60 bg-cream px-5 py-4">
               <div>

@@ -1,5 +1,4 @@
-import { KhachapuriIcon, KhinkaliIcon } from "./khinkali";
-import { LogoLockup } from "./logo";
+import Image from "next/image";
 
 export function Hero() {
   return (
@@ -49,12 +48,17 @@ export function Hero() {
         </div>
       </div>
 
-      {/* brand card — the blush logo lockup, echoing the label on the packaging */}
-      <div className="relative overflow-hidden rounded-3xl border border-tan/60 bg-blush px-8 py-16 sm:py-20">
-        <KhachapuriIcon className="absolute -left-8 -top-6 h-24 w-auto -rotate-12 text-tan/60" />
-        <KhinkaliIcon className="absolute -bottom-8 -right-4 h-28 w-auto rotate-12 text-tan/60" />
-        <LogoLockup className="relative" />
-        <div className="relative mt-12 flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-ink/50">
+      {/* brand card — the real logo label from the packaging */}
+      <div className="overflow-hidden rounded-3xl border border-tan/60 bg-blush">
+        <Image
+          src="/brand/logo-card.jpg"
+          alt="TSOMI logo — multicolor serif wordmark with an ornamental medallion O, ცომი in Georgian script below"
+          width={1080}
+          height={720}
+          priority
+          className="w-full"
+        />
+        <div className="flex items-center justify-between px-6 pb-5 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-ink/50">
           <span>Est. Tbilisi</span>
           <span>100% cotton, 100% dough</span>
         </div>
