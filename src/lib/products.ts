@@ -1,51 +1,39 @@
+export type CategoryId = "tees" | "bags";
+
+export const categories: { id: CategoryId; label: string }[] = [
+  { id: "tees", label: "Tees" },
+  { id: "bags", label: "Bags" },
+];
+
+export const locales = ["en", "ru", "ka", "ja"] as const;
+export type LocaleId = (typeof locales)[number];
+
+export const localeLabels: Record<LocaleId, string> = {
+  en: "English",
+  ru: "Russian",
+  ka: "Georgian",
+  ja: "Japanese",
+};
+
+/** Per-language copy for one product field. English is the only field that's ever required. */
+export type LocalizedText = Record<LocaleId, string | null | undefined>;
+
+/** Falls back to English whenever a language's value is blank. */
+export function resolveLocalized(value: LocalizedText, locale: LocaleId = "en"): string {
+  return value[locale]?.trim() || value.en?.trim() || "";
+}
+
 export type Product = {
   id: string;
   name: string;
   georgian: string;
   price: number; // GEL (₾)
+  category: CategoryId;
   image: string;
   /** optional second shot, shown on hover */
   hoverImage?: string;
   alt: string;
   tag?: string;
+  /** units currently available to sell */
+  stock: number;
 };
-
-/* The current drop — photos from the feed, in /public/products */
-export const featuredProducts: Product[] = [
-  {
-    id: "khachapuri-shopper",
-    name: "Khachapuri Shopper",
-    georgian: "ხაჭაპურის შოპერი",
-    price: 69,
-    image: "/products/khachapuri-shopper.jpg",
-    hoverImage: "/products/khachapuri-shopper-worn.jpg",
-    alt: "Cream canvas shopper bag covered in adjaruli khachapuri prints, with a plush khachapuri pocket",
-    tag: "Icon",
-  },
-  {
-    id: "khinkali-street",
-    name: "Khinkali Street Tee",
-    georgian: "ხინკალი",
-    price: 89,
-    image: "/products/khinkali-street.jpg",
-    alt: "White oversized tee with a khinkali-headed character in a bomber jacket, next to TSOMI craft packaging",
-    tag: "New",
-  },
-  {
-    id: "mr-khachapuri",
-    name: "Mr. Khachapuri Tee",
-    georgian: "ბატონი ხაჭაპური",
-    price: 89,
-    image: "/products/mr-khachapuri.jpg",
-    alt: "Black oversized tee with Mr. Khachapuri in a grey suit and sunglasses, holding a glass of wine",
-    tag: "Best seller",
-  },
-  {
-    id: "gallery-tee",
-    name: "Gallery Back-Print Tee",
-    georgian: "გალერეა",
-    price: 95,
-    image: "/products/gallery-tee.jpg",
-    alt: "Black oversized tee with a framed gallery-style back print of a khinkali-headed figure",
-  },
-];

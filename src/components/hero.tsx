@@ -1,68 +1,102 @@
 import Image from "next/image";
+import { ArrowDownIcon } from "@radix-ui/react-icons";
+import type { Dictionary } from "@/i18n/get-dictionary";
 
-export function Hero() {
+export function Hero({ dict }: { dict: Dictionary }) {
   return (
-    <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-20">
-      <div>
-        <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-blush px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em]">
-          Made in Georgia
-          <span aria-hidden="true" className="text-terracotta">
-            ◆
-          </span>
-          <span className="font-georgian normal-case tracking-normal">
-            თბილისი
-          </span>
-        </p>
+    <section className="flex min-h-[84vh] flex-col bg-cream">
+      <div className="flex flex-1 items-center">
+        <div className="-mt-16 mx-auto grid w-full max-w-330 items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-8">
+          {/* copy */}
+          <div>
+            <h1 className="font-display uppercase">
+              <span className="block text-4xl leading-tight tracking-wide sm:text-5xl">
+                {dict.hero.line1}
+              </span>
+              <span className="block text-4xl leading-tight tracking-wide sm:text-5xl">
+                {dict.hero.line2}
+              </span>
+              <span className="mt-3 block text-[3.4rem] leading-none text-terracotta sm:text-7xl xl:text-[6rem]">
+                {dict.hero.highlight}
+              </span>
+              <span className="mt-3 block text-4xl leading-tight tracking-wide sm:text-5xl">
+                <span className="text-gold">{dict.hero.and}</span>{" "}
+                <span className="text-navy">{dict.hero.khinkali}</span>
+              </span>
+            </h1>
 
-        <h1 className="font-display text-5xl uppercase leading-[1.04] tracking-wide sm:text-6xl lg:text-7xl">
-          Streetwear
-          <br />
-          raised on
-          <br />
-          <span className="text-terracotta">khachapuri</span>
-          <span className="text-gold"> &amp; </span>
-          <span className="text-navy">khinkali</span>
-        </h1>
+            <div className="mt-8">
+              <a
+                href="#catalog"
+                className="group inline-flex items-center gap-3 rounded-lg bg-yolk px-8 py-4 font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold"
+              >
+                {dict.hero.cta}
+                <ArrowDownIcon className="h-4 w-4 animate-bounce transition-transform group-hover:translate-y-0.5" />
+              </a>
+            </div>
+          </div>
 
-        <p className="mt-6 max-w-md text-lg leading-relaxed text-ink/70">
-          <span className="font-georgian font-bold text-ink">ცომი</span> [tsomi]
-          — <em>dough</em>. We fold the food every Georgian grew up on into tees
-        and shoppers you can carry to the supra and the street.
-        </p>
+          {/* photo collage — catalog shots layered over an organic blob */}
+          <div className="relative aspect-square w-full max-w-xl justify-self-center lg:max-w-130 lg:justify-self-end">
+            {/* main shot in a blob mask */}
+            <div
+              className="absolute right-0 top-0 h-[86%] w-[74%] overflow-hidden"
+              style={{ borderRadius: "56% 44% 52% 48% / 44% 54% 46% 56%" }}
+            >
+              <Image
+                src="/products/khinkali-street.jpg"
+                alt="White oversized tee with the khinkali-headed character"
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 95vw"
+                className="object-cover"
+              />
+            </div>
 
-        <div className="mt-8 flex flex-wrap gap-4">
-          <a
-            href="#catalog"
-            className="rounded-full bg-terracotta px-7 py-3.5 font-bold text-cream transition-colors hover:bg-brick"
-          >
-            Browse the drop
-          </a>
-          <a
-            href="https://www.instagram.com/tsomi.streetwear/"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full border-2 border-ink px-7 py-3.5 font-bold transition-colors hover:bg-ink hover:text-cream"
-          >
-            @tsomi.streetwear
-          </a>
+            {/* overlapping tee cards */}
+            <div className="absolute left-0 top-[36%] z-10 w-[36%] -rotate-3 overflow-hidden rounded-2xl border-4 border-cream shadow-xl">
+              <div className="relative aspect-4/5">
+                <Image
+                  src="/products/mr-khachapuri.jpg"
+                  alt="Black tee with Mr. Khachapuri holding a glass of wine"
+                  fill
+                  sizes="(min-width: 1024px) 24vw, 40vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="absolute bottom-0 left-[22%] z-20 w-[46%] rotate-1 overflow-hidden rounded-3xl border-4 border-cream shadow-2xl">
+              <div className="relative aspect-4/5">
+                <Image
+                  src="/products/khachapuri-shopper-worn.jpg"
+                  alt="Model carrying the khachapuri shopper over one shoulder"
+                  fill
+                  sizes="(min-width: 1024px) 30vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            {/* floating food cutouts */}
+            <Image
+              src="/icons/khachapuri.png"
+              alt=""
+              width={200}
+              height={168}
+              className="absolute left-[14%] top-[3%] z-20 w-[20%] rotate-12 drop-shadow-lg"
+            />
+            <Image
+              src="/icons/khinkali.png"
+              alt=""
+              width={450}
+              height={350}
+              className="absolute bottom-[10%] right-[1%] z-20 w-[19%] -rotate-12 drop-shadow-lg"
+            />
+          </div>
         </div>
       </div>
 
-      {/* brand card — the real logo label from the packaging */}
-      <div className="overflow-hidden rounded-3xl border border-tan/60 bg-blush">
-        <Image
-          src="/brand/logo-card.jpg"
-          alt="TSOMI logo — multicolor serif wordmark with an ornamental medallion O, ცომი in Georgian script below"
-          width={1080}
-          height={720}
-          priority
-          className="w-full"
-        />
-        <div className="flex items-center justify-between px-6 pb-5 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-ink/50">
-          <span>Est. Tbilisi</span>
-          <span>100% cotton, 100% dough</span>
-        </div>
-      </div>
     </section>
   );
 }

@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tsomi
+      POSTGRES_PASSWORD: tsomi
+      POSTGRES_DB: tsomi
+    ports:
+      - "5433:5432"
+    volumes:
+      - tsomi_pgdata:/var/lib/postgresql/data
+
+volumes:
+  tsomi_pgdata:
