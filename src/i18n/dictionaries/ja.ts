@@ -54,13 +54,13 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "カタログ",
-    description:
-      "TSOMIのすべてがここに。新しいカテゴリーも近日追加予定 — まずは焼きたての新作をチェック。",
     filterAll: "すべて",
     empty: "まだ何もありません — また後でチェックしてください。",
+    itemCount: "{count}点",
   },
   product: {
     soldOut: "完売",
+    lowStock: "残り{count}点",
   },
   language: {
     label: "言語",

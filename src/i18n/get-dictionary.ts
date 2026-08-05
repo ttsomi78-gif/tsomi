@@ -41,12 +41,13 @@ export interface Dictionary {
   };
   catalog: {
     heading: string;
-    description: string;
     filterAll: string;
     empty: string;
+    itemCount: string;
   };
   product: {
     soldOut: string;
+    lowStock: string;
   };
   language: {
     label: string;

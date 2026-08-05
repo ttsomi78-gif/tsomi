@@ -33,7 +33,7 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
           {featuredProducts.map((product) => (
             <CarouselItem
               key={product.id}
-              className="basis-full sm:basis-1/2 lg:basis-1/4"
+              className="basis-full py-8 sm:basis-1/2 lg:basis-1/4"
             >
               <ProductCard product={product} dict={dict} />
             </CarouselItem>

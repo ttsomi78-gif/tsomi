@@ -54,13 +54,13 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "კატალოგი",
-    description:
-      "ყველაფერი TSOMI ერთ ადგილას. მალე მეტი კატეგორია დაემატება — ჯერჯერობით აი, რა არის ცხელი ღუმელიდან.",
     filterAll: "ყველა",
     empty: "აქ ჯერ არაფერია — შემოგვიარე მალე.",
+    itemCount: "{count} ერთეული",
   },
   product: {
     soldOut: "გაყიდულია",
+    lowStock: "დარჩა მხოლოდ {count}",
   },
   language: {
     label: "ენა",

@@ -54,13 +54,13 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "Каталог",
-    description:
-      "Всё TSOMI в одном месте. Новые категории уже на подходе — а пока смотри, что свежего вышло из печи.",
     filterAll: "Все",
     empty: "Здесь пока пусто — загляни позже.",
+    itemCount: "{count} позиций",
   },
   product: {
     soldOut: "Распродано",
+    lowStock: "Осталось {count} шт.",
   },
   language: {
     label: "Язык",
