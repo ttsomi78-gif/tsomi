@@ -25,22 +25,54 @@ const dictionary: Dictionary = {
     eyebrow: "What is TSOMI?",
     headingSuffix: "— dough.",
     paragraph:
-      "Georgia's greatest hits are made of dough — khinkali, khachapuri, the whole supra table. TSOMI folds that heritage into streetwear: surreal characters, heavy cotton, and a wink. Culturally proud, never serious. Made in Georgia, always.",
-    castEyebrow: "Meet the cast",
+      "Dough can become anything — any shape, any flavor, any idea. For us it stands for freedom and creativity: no frames, no limits. That's why TSOMI exists — a brand without borders.",
+    castEyebrow: "The TSOMI characters",
+    castIntro:
+      "Every TSOMI character has their own personality, habits and story. They're as different as people are — and in one of them you might recognize yourself or your friends.",
     characters: [
       {
-        title: "The Khinkali Kid",
-        text: "Dumpling-headed, bomber jacket on, hands in pockets. Twelve pleats minimum, no broth spilled.",
+        trait: "The extrovert",
+        title: "Khinkali-Man",
+        text: "Our symbol of freedom. Loud, bright and a little crazy in the best way — he travels, meets new people, tries everything and never cares what anyone thinks. He lives exactly the way he likes. And recently, something big happened to him…",
       },
       {
-        title: "Mr. Khachapuri",
-        text: "Boat-shaped businessman. Sunglasses on, yolk intact, wine in hand. Closes deals before the cheese sets.",
+        trait: "His girlfriend",
+        title: "Khinkali-Woman",
+        text: "The day she first arrived at the shop, Khinkali-Man took one look at her and fell in love. Just as bright, open and alive as he is. Together they're the most energetic couple in TSOMI — two extroverts who love people, adventures and everything new.",
       },
       {
-        title: "The Shopper",
-        text: "A canvas bag wearing its breakfast — adjaruli prints and a plush khachapuri riding in the pocket.",
+        trait: "The introvert",
+        title: "The Minimalist",
+        text: "Khinkali-Man's total opposite. He owns five T-shirts — all identical, all black. At home: one bed, one table, one chair. He spent a whole month deciding whether he needed a bicycle. Now he owns a bed, a table, a chair… and a bicycle.",
+      },
+      {
+        trait: "The businessman",
+        title: "Khachapuri-Man",
+        text: "Serious, confident and very fond of himself. He values quality, comfort and beautiful things — real style lives in the details. And he just launched his own wine. Now he's not only a man of taste — he's a man with his own label.",
+      },
+      {
+        trait: "Three friends",
+        title: "The Three Khinkali",
+        text: "Three best friends who look different, think different and live different — and still share one table. Because real friendship doesn't need matching: you can be completely unalike and still sit down together.",
       },
     ],
+    madeIn: {
+      eyebrow: "Made in Georgia",
+      heading: "Almost everything is born in Batumi",
+      text: "From sewing and labels to packaging and the smallest details. Building a brand from scratch in a small city was harder than it looked — fabrics, makers and people took a long time to find. But that road made TSOMI what it is: behind every piece stand people, ideas, experiments and the story of a brand born in Georgia.",
+    },
+    manifesto: {
+      heading: "TSOMI is more than clothing",
+      items: [
+        "Freedom",
+        "Creativity",
+        "Comfort",
+        "A bit of humor & self-irony",
+        "Memories of Georgia you can wear",
+      ],
+      closing:
+        "Like dough, TSOMI can take any shape. Today it's a T-shirt. Tomorrow — a new character. The day after — an idea that doesn't exist yet. That's why TSOMI has no borders.",
+    },
   },
   instagram: {
     heading: "Follow the dough",

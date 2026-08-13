@@ -1,58 +1,83 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { KhachapuriIcon, KhinkaliIcon, ToteIcon } from "./khinkali";
+import {
+  BicycleIcon,
+  KhachapuriIcon,
+  KhinkaliIcon,
+  KhinkaliWomanIcon,
+  ThreeKhinkaliIcon,
+} from "./khinkali";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const icons = [
-  <KhinkaliIcon key="khinkali" className="h-12 w-auto" />,
-  <KhachapuriIcon key="khachapuri" className="h-12 w-auto" />,
-  <ToteIcon key="tote" className="h-12 w-auto" />,
+  <KhinkaliIcon key="khinkali-man" className="h-8 w-auto" />,
+  <KhinkaliWomanIcon key="khinkali-woman" className="h-8 w-auto" />,
+  <BicycleIcon key="minimalist" className="h-8 w-auto" />,
+  <KhachapuriIcon key="khachapuri-man" className="h-8 w-auto" />,
+  <ThreeKhinkaliIcon key="three-khinkali" className="h-8 w-auto" />,
 ];
-const rotations = ["md:-rotate-2", "md:rotate-1", "md:-rotate-1"];
+const images = [
+  "/characters/khinkali-man.jpg",
+  "/characters/khinkali-woman.jpg",
+  "/characters/minimalist.jpg",
+  "/characters/khachapuri-man.jpg",
+  "/characters/supra.jpg",
+];
+const rotations = [
+  "md:-rotate-2",
+  "md:rotate-1",
+  "md:-rotate-1",
+  "md:rotate-2",
+  "md:-rotate-1",
+];
+const cardImageSizes =
+  "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw";
 
 export function Story({ dict }: { dict: Dictionary }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
   const characters = dict.story.characters.map((character, index) => ({
     ...character,
     number: `0${index + 1}`,
     icon: icons[index],
+    image: images[index],
     rotate: rotations[index],
   }));
 
   useGSAP(
     () => {
-      const cards = cardsRef.current
-        ? Array.from(cardsRef.current.querySelectorAll<HTMLElement>(".story-card"))
-        : [];
-      if (!cards.length) return;
-      // reduced motion: no pin, no reveal — cards just sit in place
+      // reduced motion: no reveal — everything just sits in place
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const reveals = sectionRef.current
+        ? Array.from(
+            sectionRef.current.querySelectorAll<HTMLElement>(
+              ".story-card, .story-reveal",
+            ),
+          )
+        : [];
+      if (!reveals.length) return;
 
-      gsap.set(cards, { autoAlpha: 0, y: 80 });
+      gsap.set(reveals, { autoAlpha: 0, y: 60 });
 
-      const st = ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "+=100%",
-        pin: true,
-        scrub: 1,
-        animation: gsap.timeline().to(cards, {
-          autoAlpha: 1,
-          y: 0,
-          stagger: 0.5,
-          ease: "power2.out",
-        }),
+      ScrollTrigger.batch(reveals, {
+        start: "top 85%",
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            autoAlpha: 1,
+            y: 0,
+            stagger: 0.12,
+            duration: 0.7,
+            ease: "power2.out",
+          }),
       });
-
-      return () => st.kill();
     },
     { scope: sectionRef },
   );
@@ -88,34 +113,90 @@ export function Story({ dict }: { dict: Dictionary }) {
         <p className="mt-16 text-xs font-semibold uppercase tracking-[0.3em] text-cream/40">
           {dict.story.castEyebrow}
         </p>
+        <p className="mt-4 max-w-2xl leading-relaxed text-cream/60">
+          {dict.story.castIntro}
+        </p>
 
-        <div ref={cardsRef} className="mt-6 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => (
             <div key={character.title} className="story-card">
               <motion.article
                 whileHover={{ y: -6, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className={`group relative overflow-hidden rounded-2xl border border-cream/15 bg-gradient-to-b from-pine to-pine/80 p-7 shadow-lg shadow-black/10 transition-colors duration-300 hover:border-yolk/60 hover:shadow-2xl hover:shadow-black/30 ${character.rotate}`}
+                className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-cream/15 bg-gradient-to-b from-pine to-pine/80 shadow-lg shadow-black/10 transition-colors duration-300 hover:border-yolk/60 hover:shadow-2xl hover:shadow-black/30 ${character.rotate}`}
               >
-                <span className="font-display absolute right-6 top-6 text-sm text-cream/20">
-                  {character.number}
-                </span>
-                <motion.div
-                  whileHover={{ rotate: [0, -8, 8, 0], scale: 1.08 }}
-                  transition={{ duration: 0.5 }}
-                  className="mb-5 inline-flex items-center justify-center rounded-2xl bg-cream/5 p-4 text-yolk shadow-inner shadow-black/20 transition-colors group-hover:bg-yolk/10"
-                >
-                  {character.icon}
-                </motion.div>
-                <h3 className="font-display text-xl uppercase tracking-wide">
-                  {character.title}
-                </h3>
-                <p className="mt-3 leading-relaxed text-cream/60">
-                  {character.text}
-                </p>
+                <div className="relative aspect-4/5 overflow-hidden">
+                  <Image
+                    src={character.image}
+                    alt={character.title}
+                    fill
+                    sizes={cardImageSizes}
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-pine/90 to-transparent"
+                  />
+                  <span className="font-display absolute right-4 top-4 rounded-full bg-ink/50 px-3 py-1 text-sm text-cream/80 backdrop-blur-sm">
+                    {character.number}
+                  </span>
+                  <motion.span
+                    whileHover={{ rotate: [0, -8, 8, 0], scale: 1.08 }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute bottom-4 left-4 inline-flex items-center justify-center rounded-xl bg-ink/50 p-2.5 text-yolk backdrop-blur-sm transition-colors group-hover:bg-yolk/20"
+                  >
+                    {character.icon}
+                  </motion.span>
+                </div>
+                <div className="flex flex-1 flex-col p-6 pt-5">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-yolk/80">
+                    {character.trait}
+                  </p>
+                  <h3 className="font-display text-xl uppercase tracking-wide">
+                    {character.title}
+                  </h3>
+                  <p className="mt-3 leading-relaxed text-cream/60">
+                    {character.text}
+                  </p>
+                </div>
               </motion.article>
             </div>
           ))}
+        </div>
+
+        {/* Made in Georgia */}
+        <div className="story-reveal mt-20 overflow-hidden rounded-2xl border border-cream/15 bg-gradient-to-br from-pine to-pine/70 p-8 shadow-lg shadow-black/10 sm:p-10 md:grid md:grid-cols-[1fr_1.5fr] md:items-center md:gap-10">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-yolk">
+              {dict.story.madeIn.eyebrow} 🇬🇪
+            </p>
+            <h3 className="font-display mt-3 text-3xl uppercase leading-tight tracking-wide sm:text-4xl">
+              {dict.story.madeIn.heading}
+            </h3>
+          </div>
+          <p className="mt-6 leading-relaxed text-cream/70 md:mt-0">
+            {dict.story.madeIn.text}
+          </p>
+        </div>
+
+        {/* Manifesto */}
+        <div className="story-reveal mt-20 text-center">
+          <h3 className="font-display mx-auto max-w-2xl text-3xl uppercase leading-tight tracking-wide sm:text-4xl">
+            {dict.story.manifesto.heading}
+          </h3>
+          <ul className="mt-8 flex flex-wrap justify-center gap-3">
+            {dict.story.manifesto.items.map((item) => (
+              <li
+                key={item}
+                className="rounded-full border border-cream/20 bg-cream/5 px-5 py-2 text-sm text-cream/80"
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mx-auto mt-8 max-w-2xl leading-relaxed text-cream/60">
+            {dict.story.manifesto.closing}
+          </p>
         </div>
       </div>
     </section>

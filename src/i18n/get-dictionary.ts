@@ -27,7 +27,10 @@ export interface Dictionary {
     headingSuffix: string;
     paragraph: string;
     castEyebrow: string;
-    characters: { title: string; text: string }[];
+    castIntro: string;
+    characters: { trait: string; title: string; text: string }[];
+    madeIn: { eyebrow: string; heading: string; text: string };
+    manifesto: { heading: string; items: string[]; closing: string };
   };
   instagram: {
     heading: string;
