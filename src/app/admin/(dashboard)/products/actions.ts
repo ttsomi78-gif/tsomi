@@ -11,6 +11,7 @@ import { requireAdminSession } from "@/lib/session";
 import { uploadProductImage, deleteProductImageByUrl } from "@/lib/storage";
 import { gelToTetri } from "@/lib/money";
 import { slugify } from "@/lib/slug";
+import { locales } from "@/lib/products";
 
 const optionalText = z
   .string()
@@ -39,8 +40,12 @@ const productSchema = z.object({
 export type ProductFormState = { error?: string } | undefined;
 
 function revalidatePublicPages() {
-  revalidatePath("/");
-  revalidatePath("/catalog");
+  // The public pages live under /[locale], so "/" and "/catalog" alone
+  // would never match — every locale has to be revalidated explicitly.
+  for (const locale of locales) {
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/catalog`);
+  }
   revalidatePath("/admin/products");
 }
 

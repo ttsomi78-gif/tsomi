@@ -81,6 +81,7 @@ export function Marquee() {
   useGSAP(
     () => {
       if (!trackRef.current) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       // base autoplay — always drifting forward at a steady pace
       const tween = gsap.to(trackRef.current, {

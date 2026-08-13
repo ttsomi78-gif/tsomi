@@ -28,20 +28,26 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
         </Link>
       </div>
 
-      <Carousel opts={{ align: "start", loop: false }} className="px-1">
-        <CarouselContent>
-          {featuredProducts.map((product) => (
-            <CarouselItem
-              key={product.id}
-              className="basis-full py-8 sm:basis-1/2 lg:basis-1/4"
-            >
-              <ProductCard product={product} dict={dict} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+      {featuredProducts.length === 0 ? (
+        <p className="rounded-2xl border border-tan/60 bg-white/50 px-6 py-10 text-center text-ink/50">
+          {dict.catalog.empty}
+        </p>
+      ) : (
+        <Carousel opts={{ align: "start", loop: false }} className="px-1">
+          <CarouselContent>
+            {featuredProducts.map((product) => (
+              <CarouselItem
+                key={product.id}
+                className="basis-full py-8 sm:basis-1/2 lg:basis-1/4"
+              >
+                <ProductCard product={product} dict={dict} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      )}
     </section>
   );
 }

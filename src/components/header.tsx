@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wordmark } from "./logo";
 import { LanguageSwitcher } from "./language-switcher";
 import { SocialLinks } from "./social-links";
+import { MobileMenu } from "./mobile-menu";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
@@ -13,9 +14,13 @@ export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary })
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-tan/50 bg-white shadow-sm">
-      <div className="mx-auto flex h-16 max-w-330 items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href={`/${locale}`} aria-label="TSOMI home">
+    <header className="sticky top-0 z-50 border-b border-tan/50 bg-white/85 shadow-sm shadow-ink/5 backdrop-blur-md">
+      <div className="relative mx-auto flex h-16 max-w-330 items-center justify-between gap-4 px-4 sm:px-6">
+        <Link
+          href={`/${locale}`}
+          aria-label="TSOMI home"
+          className="rounded-md transition-opacity hover:opacity-80"
+        >
           <Wordmark className="text-[1.6rem]" />
         </Link>
 
@@ -24,7 +29,7 @@ export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary })
             <Link
               key={item.href}
               href={item.href}
-              className="relative py-1 transition-colors hover:text-terracotta after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-terracotta after:transition-all after:duration-300 hover:after:w-full"
+              className="relative py-1 transition-colors hover:text-terracotta after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:rounded-full after:bg-terracotta after:transition-all after:duration-300 hover:after:w-full"
             >
               {item.label}
             </Link>
@@ -36,12 +41,18 @@ export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary })
             <SocialLinks size="sm" />
           </div>
           <LanguageSwitcher locale={locale} label={dict.language.label} />
-          <button
-            type="button"
-            className="rounded-full border-2 border-ink px-4 py-1.5 text-sm font-bold transition-colors hover:bg-ink hover:text-cream"
+          <Link
+            href={`/${locale}/catalog`}
+            className="hidden rounded-full bg-ink px-5 py-2 text-sm font-bold uppercase tracking-wide text-cream shadow-md shadow-ink/15 transition-all hover:bg-terracotta hover:shadow-lg hover:shadow-terracotta/25 md:inline-flex"
           >
-            {dict.nav.cart}
-          </button>
+            {dict.nav.shop}
+          </Link>
+          <MobileMenu
+            items={nav}
+            shopHref={`/${locale}/catalog`}
+            shopLabel={dict.nav.shop}
+            menuLabel={dict.nav.menu}
+          />
         </div>
       </div>
     </header>

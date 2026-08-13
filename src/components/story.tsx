@@ -33,6 +33,8 @@ export function Story({ dict }: { dict: Dictionary }) {
         ? Array.from(cardsRef.current.querySelectorAll<HTMLElement>(".story-card"))
         : [];
       if (!cards.length) return;
+      // reduced motion: no pin, no reveal — cards just sit in place
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       gsap.set(cards, { autoAlpha: 0, y: 80 });
 

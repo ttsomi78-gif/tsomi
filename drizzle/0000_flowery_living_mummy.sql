@@ -1,0 +1,26 @@
+CREATE TYPE "public"."category" AS ENUM('tees', 'bags');--> statement-breakpoint
+CREATE TABLE "products" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name_en" text NOT NULL,
+	"name_ru" text,
+	"name_ka" text,
+	"name_ja" text,
+	"alt_en" text NOT NULL,
+	"alt_ru" text,
+	"alt_ka" text,
+	"alt_ja" text,
+	"tag_en" text,
+	"tag_ru" text,
+	"tag_ka" text,
+	"tag_ja" text,
+	"category" "category" NOT NULL,
+	"price_tetri" integer NOT NULL,
+	"image_url" text NOT NULL,
+	"hover_image_url" text,
+	"stock" integer DEFAULT 0 NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"featured" boolean DEFAULT false NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);

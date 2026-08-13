@@ -34,3 +34,20 @@ body {
 section[id] {
   scroll-margin-top: 5rem;
 }
+
+/* keyboard focus — one consistent, visible ring everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-yolk);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

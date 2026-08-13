@@ -1,0 +1,56 @@
+# Production stack for the DigitalOcean VPS.
+#
+#   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+#
+# `--env-file .env.production` makes the ${...} interpolation below read that
+# file, and the same file is injected into the web container via `env_file`.
+# See .env.production.example for every required variable.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tsomi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: ${POSTGRES_DB:-tsomi}
+    volumes:
+      - tsomi_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tsomi} -d ${POSTGRES_DB:-tsomi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: applies ./drizzle SQL migrations, then exits. `web` waits for it.
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: npx drizzle-kit migrate
+    environment:
+      DIRECT_URL: postgres://${POSTGRES_USER:-tsomi}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tsomi}
+      # also set for one-off tooling, e.g. `run --rm migrate npx tsx scripts/seed.ts`
+      DATABASE_URL: postgres://${POSTGRES_USER:-tsomi}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tsomi}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-tsomi}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tsomi}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  tsomi_pgdata:

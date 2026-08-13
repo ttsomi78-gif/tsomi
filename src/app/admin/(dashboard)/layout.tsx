@@ -2,6 +2,10 @@ import { getProductStats } from "@/db/queries";
 import { Sidebar } from "./sidebar";
 import { MobileTopbar } from "./mobile-topbar";
 
+// Admin always reflects the live database — never prerendered at build time
+// (the build environment has no DATABASE_URL) and never cached.
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

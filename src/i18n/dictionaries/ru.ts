@@ -5,7 +5,8 @@ const dictionary: Dictionary = {
     catalog: "Каталог",
     story: "История",
     instagram: "Instagram",
-    cart: "Корзина (0)",
+    shop: "В магазин",
+    menu: "Меню",
   },
   hero: {
     line1: "Стритвир",

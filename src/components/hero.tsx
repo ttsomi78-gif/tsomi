@@ -28,10 +28,10 @@ export function Hero({ dict }: { dict: Dictionary }) {
             <div className="mt-8">
               <a
                 href="#catalog"
-                className="group inline-flex items-center gap-3 rounded-lg bg-yolk px-8 py-4 font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold"
+                className="group inline-flex items-center gap-3 rounded-full bg-yolk px-8 py-4 font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:shadow-xl hover:shadow-gold/30"
               >
                 {dict.hero.cta}
-                <ArrowDownIcon className="h-4 w-4 animate-bounce transition-transform group-hover:translate-y-0.5" />
+                <ArrowDownIcon className="h-4 w-4 transition-transform group-hover:translate-y-0.5 motion-safe:animate-bounce" />
               </a>
             </div>
           </div>

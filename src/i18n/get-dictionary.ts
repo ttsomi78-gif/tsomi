@@ -6,7 +6,8 @@ export interface Dictionary {
     catalog: string;
     story: string;
     instagram: string;
-    cart: string;
+    shop: string;
+    menu: string;
   };
   hero: {
     line1: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { categories, locales, localeLabels, type LocaleId } from "@/lib/products";
 import { createProduct, updateProduct, type ProductFormState } from "./actions";
@@ -36,9 +36,35 @@ export function ProductForm({ product }: { product?: EditableProduct }) {
   const action = product ? updateProduct.bind(null, product.id) : createProduct;
   const [state, formAction] = useActionState(action, initialState);
   const [activeLocale, setActiveLocale] = useState<LocaleId>("en");
+  const formRef = useRef<HTMLFormElement>(null);
+  const [revealInvalid, setRevealInvalid] = useState(false);
+
+  // A required field inside a hidden locale panel can't be focused by the
+  // browser, which silently blocks submission. When that happens, switch to
+  // the tab that owns the field, then re-run validation so the message shows.
+  useEffect(() => {
+    if (!revealInvalid) return;
+    setRevealInvalid(false);
+    formRef.current?.reportValidity();
+  }, [revealInvalid]);
+
+  function handleInvalid(event: React.FormEvent) {
+    const name = (event.target as HTMLInputElement).name ?? "";
+    const owner = locales.find((locale) => name.endsWith(capitalize(locale)));
+    if (owner && owner !== activeLocale) {
+      event.preventDefault();
+      setActiveLocale(owner);
+      setRevealInvalid(true);
+    }
+  }
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-10">
+    <form
+      ref={formRef}
+      action={formAction}
+      onInvalidCapture={handleInvalid}
+      className="max-w-2xl space-y-10"
+    >
       <section className="space-y-5">
         <SectionHeading title="Basics" description="Category, price and inventory — shown the same in every language." />
 

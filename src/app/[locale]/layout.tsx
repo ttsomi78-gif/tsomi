@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { locales, isLocale } from "@/i18n/config";
+import { isLocale } from "@/i18n/config";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
+// No generateStaticParams: the pages under /[locale] read the product catalog
+// from the database, which isn't reachable during `docker build`. With ISR
+// (`revalidate` on each page) they render on first request instead and are
+// then cached — same performance, no build-time database dependency.
 
 export default async function LocaleLayout({
   children,

@@ -43,7 +43,7 @@ export function Instagram({ dict }: { dict: Dictionary }) {
           rel="noreferrer"
           className="text-xs font-semibold uppercase tracking-[0.25em] text-terracotta hover:underline"
         >
-          @tsomi.streetwear ↗
+          {dict.hero.instagramHandle} ↗
         </a>
       </div>
 

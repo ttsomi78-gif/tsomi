@@ -14,5 +14,10 @@ const hash = bcrypt.hashSync(password, 12);
 // there's nothing to get wrong by hand.
 const escaped = hash.replace(/\$/g, "\\$");
 
-console.log(`\nPaste this exact line into .env.local:\n`);
+console.log(`\nPaste this exact line into .env.local (local dev):\n`);
 console.log(`ADMIN_PASSWORD_HASH=${escaped}`);
+
+// Docker Compose reads .env.production itself (no Next.js dotenv involved):
+// single quotes keep the raw hash intact through compose's own interpolation.
+console.log(`\nPaste this exact line into .env.production (Docker deploy):\n`);
+console.log(`ADMIN_PASSWORD_HASH='${hash}'`);

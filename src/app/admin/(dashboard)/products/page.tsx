@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { formatGel } from "@/lib/money";
 import { getAllProductsForAdmin } from "@/db/queries";
 import { toggleActive } from "./actions";
 import { DeleteButton } from "./delete-button";
@@ -63,7 +64,7 @@ export default async function AdminProductsPage() {
                   <td className="px-4 py-3 capitalize text-ink/70">
                     {product.category}
                   </td>
-                  <td className="px-4 py-3">{product.price} ₾</td>
+                  <td className="px-4 py-3">{formatGel(product.price)} ₾</td>
                   <td className="px-4 py-3">
                     <span
                       className={

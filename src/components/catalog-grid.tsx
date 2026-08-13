@@ -77,10 +77,10 @@ function FilterButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border-2 px-5 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${
+      className={`rounded-full border-2 px-5 py-2 text-sm font-bold uppercase tracking-wide transition-all ${
         active
-          ? "border-ink bg-ink text-cream"
-          : "border-tan/60 text-ink/60 hover:border-ink hover:text-ink"
+          ? "border-ink bg-ink text-cream shadow-md shadow-ink/20"
+          : "border-tan/60 bg-white/40 text-ink/60 hover:border-ink hover:text-ink"
       }`}
     >
       {children}

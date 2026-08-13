@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { categories, type Product } from "@/lib/products";
+import { formatGel } from "@/lib/money";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export const productImageSizes =
@@ -44,7 +45,7 @@ export function ProductCard({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-ink/5 transition-shadow duration-300 hover:shadow-2xl hover:shadow-ink/20 hover:ring-terracotta/20"
+        className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-md shadow-ink/5 ring-1 ring-ink/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/15 hover:ring-terracotta/20"
       >
         <button
           type="button"
@@ -78,7 +79,7 @@ export function ProductCard({
             alt={product.alt}
             fill
             sizes={productImageSizes}
-            className={`object-cover ${soldOut ? "opacity-60 grayscale" : ""}`}
+            className={`object-cover transition-transform duration-500 group-hover:scale-[1.04] ${soldOut ? "opacity-60 grayscale" : ""}`}
           />
           {product.hoverImage && (
             <Image
@@ -107,7 +108,7 @@ export function ProductCard({
             </p>
           </div>
           <span className="mt-auto font-display text-lg text-terracotta">
-            {product.price} ₾
+            {formatGel(product.price)} ₾
           </span>
         </div>
       </motion.article>
