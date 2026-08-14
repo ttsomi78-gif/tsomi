@@ -1,42 +1,32 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
-import { KhachapuriIcon, KhinkaliIcon, ToteIcon } from "./khinkali";
-import { OrnamentO } from "./logo";
+import { InstagramIcon } from "./social-icons";
 import { socialLinks } from "@/lib/social";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
-/* Tiles stand in for real grid posts — swap for photos from the feed */
+/* Real shots standing in for grid posts — swap for photos from the feed */
 const tiles = [
-  {
-    bg: "bg-gradient-to-br from-terracotta to-brick",
-    fg: "text-cream",
-    render: () => <KhinkaliIcon className="h-1/2 w-auto max-w-[50%]" />,
-  },
-  {
-    bg: "bg-gradient-to-br from-blush to-sand",
-    fg: "text-ink",
-    render: () => <OrnamentO className="h-1/2 w-auto max-w-[50%]" />,
-  },
-  {
-    bg: "bg-gradient-to-br from-navy to-ink",
-    fg: "text-cream",
-    render: () => <KhachapuriIcon className="h-2/5 w-auto max-w-[55%]" />,
-  },
-  {
-    bg: "bg-gradient-to-br from-gold to-yolk",
-    fg: "text-cream",
-    render: () => <ToteIcon className="h-1/2 w-auto max-w-[50%]" />,
-  },
+  "/products/khinkali-street.jpg",
+  "/products/gallery-tee.jpg",
+  "/products/mr-khachapuri.jpg",
+  "/products/khachapuri-shopper-worn.jpg",
 ];
 
 export function Instagram({ dict }: { dict: Dictionary }) {
   return (
     <section id="instagram" className="mx-auto max-w-330 px-4 py-20 sm:px-6">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-        <h2 className="font-display text-4xl uppercase tracking-wide sm:text-5xl">
-          {dict.instagram.heading}
-        </h2>
+        <div>
+          <div
+            aria-hidden="true"
+            className="mb-4 h-1.5 w-16 rounded-full bg-terracotta"
+          />
+          <h2 className="font-display text-4xl uppercase tracking-wide sm:text-5xl">
+            {dict.instagram.heading}
+          </h2>
+        </div>
         <a
           href={socialLinks.instagram}
           target="_blank"
@@ -48,9 +38,9 @@ export function Instagram({ dict }: { dict: Dictionary }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {tiles.map((tile, index) => (
+        {tiles.map((src, index) => (
           <motion.a
-            key={index}
+            key={src}
             href={socialLinks.instagram}
             target="_blank"
             rel="noreferrer"
@@ -59,11 +49,20 @@ export function Instagram({ dict }: { dict: Dictionary }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.35, delay: index * 0.06, ease: "easeOut" }}
-            whileHover={{ scale: 1.04, rotate: -1 }}
+            whileHover={{ scale: 1.03, rotate: -0.5 }}
             whileTap={{ scale: 0.98 }}
-            className={`flex aspect-square items-center justify-center rounded-2xl shadow-md ${tile.bg} ${tile.fg}`}
+            className="group relative aspect-square overflow-hidden rounded-2xl shadow-md"
           >
-            {tile.render()}
+            <Image
+              src={src}
+              alt=""
+              fill
+              sizes="(min-width: 640px) 25vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-ink/0 text-cream opacity-0 transition-all duration-300 group-hover:bg-ink/40 group-hover:opacity-100">
+              <InstagramIcon className="h-8 w-8 drop-shadow-lg" />
+            </span>
           </motion.a>
         ))}
       </div>

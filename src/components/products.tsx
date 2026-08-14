@@ -17,12 +17,18 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
   return (
     <section id="catalog" className="mx-auto max-w-330 px-4 py-20 sm:px-6">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-        <h2 className="font-display text-4xl uppercase tracking-wide sm:text-5xl">
-          {dict.products.heading}
-        </h2>
+        <div>
+          <div
+            aria-hidden="true"
+            className="mb-4 h-1.5 w-16 rounded-full bg-terracotta"
+          />
+          <h2 className="font-display text-4xl uppercase tracking-wide sm:text-5xl">
+            {dict.products.heading}
+          </h2>
+        </div>
         <Link
           href={`/${locale}/catalog`}
-          className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/50 underline underline-offset-4 transition-colors hover:text-terracotta"
+          className="inline-flex items-center gap-2 rounded-full border-2 border-ink/15 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-ink/70 transition-all hover:-translate-y-0.5 hover:border-terracotta hover:text-terracotta"
         >
           {dict.products.viewCatalog}
         </Link>

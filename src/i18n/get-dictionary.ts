@@ -15,9 +15,12 @@ export interface Dictionary {
     highlight: string;
     and: string;
     khinkali: string;
+    sub: string;
     cta: string;
+    ctaSecondary: string;
     instagramHandle: string;
   };
+  benefits: { title: string; text: string }[];
   products: {
     heading: string;
     viewCatalog: string;
@@ -26,6 +29,7 @@ export interface Dictionary {
     eyebrow: string;
     headingSuffix: string;
     paragraph: string;
+    readMore: string;
     castEyebrow: string;
     castIntro: string;
     characters: { trait: string; title: string; text: string }[];
@@ -34,6 +38,11 @@ export interface Dictionary {
   };
   instagram: {
     heading: string;
+  };
+  community: {
+    heading: string;
+    text: string;
+    cta: string;
   };
   footer: {
     shop: string;

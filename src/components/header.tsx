@@ -9,12 +9,12 @@ import type { LocaleId } from "@/lib/products";
 export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary }) {
   const nav = [
     { label: dict.nav.catalog, href: `/${locale}/catalog` },
-    { label: dict.nav.story, href: `/${locale}#story` },
+    { label: dict.nav.story, href: `/${locale}/history` },
     { label: dict.nav.instagram, href: `/${locale}#instagram` },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-tan/50 bg-white/85 shadow-sm shadow-ink/5 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-tan/50 bg-cream/90 shadow-sm shadow-ink/5 backdrop-blur-md">
       <div className="relative mx-auto flex h-16 max-w-330 items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href={`/${locale}`}

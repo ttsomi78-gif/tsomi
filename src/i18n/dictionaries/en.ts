@@ -14,9 +14,29 @@ const dictionary: Dictionary = {
     highlight: "Khachapuri",
     and: "&",
     khinkali: "khinkali!",
+    sub: "Oversized tees and heavy cotton streetwear with surreal Georgian characters — baked in small batches in Batumi.",
     cta: "Explore the drop",
+    ctaSecondary: "Our story",
     instagramHandle: "@tsomi.streetwear",
   },
+  benefits: [
+    {
+      title: "Made in Batumi",
+      text: "Sewing, tags and packaging — almost everything is produced locally in Georgia.",
+    },
+    {
+      title: "Small batches",
+      text: "Limited runs — when a drop sells out, it's gone.",
+    },
+    {
+      title: "Heavy premium cotton",
+      text: "Dense, soft fabric that keeps its shape wash after wash.",
+    },
+    {
+      title: "Characters with a story",
+      text: "Every print is a character with its own personality and history.",
+    },
+  ],
   products: {
     heading: "The drop",
     viewCatalog: "View full catalog →",
@@ -26,6 +46,7 @@ const dictionary: Dictionary = {
     headingSuffix: "— dough.",
     paragraph:
       "Dough can become anything — any shape, any flavor, any idea. For us it stands for freedom and creativity: no frames, no limits. That's why TSOMI exists — a brand without borders.",
+    readMore: "Read the full story",
     castEyebrow: "The TSOMI characters",
     castIntro:
       "Every TSOMI character has their own personality, habits and story. They're as different as people are — and in one of them you might recognize yourself or your friends.",
@@ -76,6 +97,11 @@ const dictionary: Dictionary = {
   },
   instagram: {
     heading: "Follow the dough",
+  },
+  community: {
+    heading: "Join the TSOMI table",
+    text: "New drops, new characters and stories from Batumi — it all lands on Instagram first.",
+    cta: "Follow @tsomi.streetwear",
   },
   footer: {
     shop: "Shop",

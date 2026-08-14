@@ -14,9 +14,29 @@ const dictionary: Dictionary = {
     highlight: "ハチャプリ",
     and: "と",
     khinkali: "ヒンカリ！",
+    sub: "シュールなジョージアのキャラクターをまとったオーバーサイズTシャツとヘビーコットンのストリートウェア。バトゥミで少量生産。",
     cta: "新作を見る",
+    ctaSecondary: "ストーリーを見る",
     instagramHandle: "@tsomi.streetwear",
   },
+  benefits: [
+    {
+      title: "バトゥミ製",
+      text: "縫製もタグもパッケージも、ほぼすべてジョージアの地元で生産。",
+    },
+    {
+      title: "少量生産",
+      text: "限定ロット — 売り切れたら、もう手に入らない。",
+    },
+    {
+      title: "ヘビーコットン",
+      text: "洗ってもかたちが崩れない、厚手でやわらかな生地。",
+    },
+    {
+      title: "物語のあるキャラクター",
+      text: "どのプリントにも、性格と物語を持つキャラクターがいる。",
+    },
+  ],
   products: {
     heading: "新作ドロップ",
     viewCatalog: "全カタログを見る →",
@@ -26,6 +46,7 @@ const dictionary: Dictionary = {
     headingSuffix: "— 生地。",
     paragraph:
       "生地からは何でも作れる — どんな形も、どんな味も、どんなアイデアも。私たちにとってそれは自由と創造の象徴。枠も制限もいらない。だからTSOMIが生まれた — 境界のないブランド。",
+    readMore: "ストーリーをすべて読む",
     castEyebrow: "TSOMIのキャラクターたち",
     castIntro:
       "TSOMIのキャラクターにはそれぞれ性格と習慣、そして自分の物語がある。人間と同じように、みんなバラバラ。その中に、自分や友達の姿が見つかるかもしれない。",
@@ -76,6 +97,11 @@ const dictionary: Dictionary = {
   },
   instagram: {
     heading: "生地をフォローしよう",
+  },
+  community: {
+    heading: "TSOMIのテーブルへようこそ",
+    text: "新作ドロップ、新キャラクター、バトゥミからの物語 — すべてはまずInstagramに届く。",
+    cta: "@tsomi.streetwear をフォロー",
   },
   footer: {
     shop: "ショップ",
