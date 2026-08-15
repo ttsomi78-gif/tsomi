@@ -3,6 +3,7 @@ import en from "./dictionaries/en";
 
 export interface Dictionary {
   nav: {
+    home: string;
     catalog: string;
     story: string;
     instagram: string;
@@ -57,6 +58,11 @@ export interface Dictionary {
     filterAll: string;
     empty: string;
     itemCount: string;
+    sortFeatured: string;
+    sortPriceAsc: string;
+    sortPriceDesc: string;
+    sortName: string;
+    inStockOnly: string;
   };
   product: {
     soldOut: string;

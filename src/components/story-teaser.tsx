@@ -4,12 +4,42 @@ import { ArrowRightIcon } from "@radix-ui/react-icons";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
-const photos = [
-  { src: "/characters/khinkali-man.jpg", tilt: "-rotate-3" },
-  { src: "/characters/khinkali-woman.jpg", tilt: "rotate-2 translate-y-3" },
-  { src: "/characters/minimalist.jpg", tilt: "-rotate-2" },
-  { src: "/characters/khachapuri-man.jpg", tilt: "rotate-3 translate-y-3" },
-  { src: "/characters/supra.jpg", tilt: "-rotate-1" },
+/*
+ * Character cutouts extracted from the print artwork (transparent PNGs).
+ * Order matches dict.story.characters. Heights vary so the lineup reads
+ * like a group shot, not a grid of same-size tiles.
+ */
+const cast = [
+  {
+    src: "/characters/khinkali-man.png",
+    width: 262,
+    height: 729,
+    size: "h-44 sm:h-60 lg:h-72",
+  },
+  {
+    src: "/characters/khinkali-woman.png",
+    width: 239,
+    height: 645,
+    size: "h-40 sm:h-56 lg:h-64",
+  },
+  {
+    src: "/characters/minimalist.png",
+    width: 192,
+    height: 425,
+    size: "h-32 sm:h-44 lg:h-52",
+  },
+  {
+    src: "/characters/khachapuri-man.png",
+    width: 249,
+    height: 812,
+    size: "h-48 sm:h-64 lg:h-80",
+  },
+  {
+    src: "/characters/three-khinkali.png",
+    width: 289,
+    height: 98,
+    size: "h-14 sm:h-18 lg:h-20",
+  },
 ];
 
 export function StoryTeaser({
@@ -22,7 +52,7 @@ export function StoryTeaser({
   return (
     <section
       id="story"
-      className="relative overflow-hidden bg-green py-20 text-cream sm:py-24"
+      className="relative overflow-hidden bg-green py-16 text-cream sm:py-24"
     >
       {/* ambient glow */}
       <div
@@ -35,33 +65,37 @@ export function StoryTeaser({
       />
 
       <div className="relative mx-auto max-w-330 px-4 text-center sm:px-6">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yolk">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-yolk">
           {dict.story.eyebrow}
-        </p>
-        <h2 className="font-display mx-auto max-w-3xl text-4xl uppercase leading-tight tracking-wide sm:text-5xl">
-          <span className="font-georgian normal-case">ცომი</span>{" "}
-          <span className="text-cream/50">[tsomi]</span> {dict.story.headingSuffix}
         </h2>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-cream/70">
           {dict.story.paragraph}
         </p>
 
-        {/* character photo strip */}
-        <div className="mt-12 flex justify-center -space-x-5 sm:-space-x-3">
-          {photos.map((photo) => (
-            <div
-              key={photo.src}
-              className={`relative aspect-4/5 w-24 overflow-hidden rounded-xl border-4 border-cream/90 shadow-xl transition-transform duration-300 hover:z-10 hover:scale-110 hover:rotate-0 sm:w-32 lg:w-36 ${photo.tilt}`}
-            >
-              <Image
-                src={photo.src}
-                alt=""
-                fill
-                sizes="150px"
-                className="object-cover"
-              />
-            </div>
-          ))}
+        {/* the cast, lined up like a family photo */}
+        <div className="mt-12 flex flex-wrap items-end justify-center gap-x-5 gap-y-10 sm:gap-x-10 lg:gap-x-14">
+          {cast.map((character, index) => {
+            const info = dict.story.characters[index];
+            return (
+              <div
+                key={character.src}
+                className="group flex flex-col items-center gap-3"
+              >
+                <Image
+                  src={character.src}
+                  alt={info?.title ?? ""}
+                  width={character.width}
+                  height={character.height}
+                  className={`w-auto ${character.size} drop-shadow-[0_18px_22px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:-translate-y-2 group-hover:scale-105`}
+                />
+                {info && (
+                  <span className="rounded-full bg-cream/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cream/70 backdrop-blur-sm transition-colors duration-300 group-hover:bg-yolk group-hover:text-ink">
+                    {info.title}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <Link

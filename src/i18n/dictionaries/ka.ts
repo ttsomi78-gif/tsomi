@@ -2,6 +2,7 @@ import type { Dictionary } from "../get-dictionary";
 
 const dictionary: Dictionary = {
   nav: {
+    home: "მთავარი",
     catalog: "კატალოგი",
     story: "ისტორია",
     instagram: "Instagram",
@@ -116,6 +117,11 @@ const dictionary: Dictionary = {
     filterAll: "ყველა",
     empty: "აქ ჯერ არაფერია — შემოგვიარე მალე.",
     itemCount: "{count} ერთეული",
+    sortFeatured: "რჩეული",
+    sortPriceAsc: "ფასი: ზრდადობით",
+    sortPriceDesc: "ფასი: კლებადობით",
+    sortName: "სახელი",
+    inStockOnly: "მხოლოდ მარაგში",
   },
   product: {
     soldOut: "გაყიდულია",

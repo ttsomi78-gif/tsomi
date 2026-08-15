@@ -2,6 +2,7 @@ import type { Dictionary } from "../get-dictionary";
 
 const dictionary: Dictionary = {
   nav: {
+    home: "Home",
     catalog: "Catalog",
     story: "Story",
     instagram: "Instagram",
@@ -116,6 +117,11 @@ const dictionary: Dictionary = {
     filterAll: "All",
     empty: "Nothing here yet — check back soon.",
     itemCount: "{count} styles",
+    sortFeatured: "Featured",
+    sortPriceAsc: "Price: low to high",
+    sortPriceDesc: "Price: high to low",
+    sortName: "Name",
+    inStockOnly: "In stock only",
   },
   product: {
     soldOut: "Sold out",

@@ -2,6 +2,7 @@ import type { Dictionary } from "../get-dictionary";
 
 const dictionary: Dictionary = {
   nav: {
+    home: "ホーム",
     catalog: "カタログ",
     story: "ストーリー",
     instagram: "Instagram",
@@ -116,6 +117,11 @@ const dictionary: Dictionary = {
     filterAll: "すべて",
     empty: "まだ何もありません — また後でチェックしてください。",
     itemCount: "{count}点",
+    sortFeatured: "おすすめ",
+    sortPriceAsc: "価格が安い順",
+    sortPriceDesc: "価格が高い順",
+    sortName: "名前順",
+    inStockOnly: "在庫ありのみ",
   },
   product: {
     soldOut: "完売",
