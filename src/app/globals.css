@@ -20,6 +20,15 @@
   --font-georgian: var(--font-noto-georgian), serif;
 }
 
+:root {
+  /* sticky header: h-16 plus its 2px bottom border */
+  --header-h: calc(4rem + 2px);
+  /* hero breathing room, shrinks on short viewports */
+  --hero-pad: clamp(1.5rem, 4vh, 4rem);
+  /* vertical space the hero has to work with under the header */
+  --hero-space: calc(100svh - var(--header-h) - 2 * var(--hero-pad));
+}
+
 html {
   scroll-behavior: smooth;
 }

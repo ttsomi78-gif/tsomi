@@ -91,7 +91,8 @@ export function ProductCard({
             />
           )}
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          <span className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-cream opacity-0 shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:opacity-100">
+          {/* zoom chip — revealed on hover, always visible on touch devices */}
+          <span className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-cream opacity-0 shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:opacity-100 pointer-coarse:opacity-100">
             <ZoomIcon className="h-4 w-4" />
           </span>
         </button>
@@ -107,9 +108,19 @@ export function ProductCard({
               {product.georgian}
             </p>
           </div>
-          <span className="mt-auto font-display text-lg text-terracotta">
-            {formatGel(product.price)} ₾
-          </span>
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink/[0.06] pt-3">
+            <span className="font-display text-lg text-terracotta">
+              {formatGel(product.price)} ₾
+            </span>
+            <button
+              type="button"
+              onClick={() => setZoomed(true)}
+              aria-label={`Zoom in on ${product.name}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-sand text-ink ring-1 ring-tan/50 transition-all duration-200 hover:bg-yolk hover:ring-yolk active:scale-95"
+            >
+              <ZoomIcon className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </motion.article>
 

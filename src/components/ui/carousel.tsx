@@ -211,11 +211,59 @@ function CarouselNext({ className, ...props }: React.ComponentProps<"button">) {
   );
 }
 
+function CarouselDots({ className, ...props }: React.ComponentProps<"div">) {
+  const { api } = useCarousel();
+  const [snaps, setSnaps] = React.useState<number[]>([]);
+  const [selected, setSelected] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!api) return;
+    const update = () => {
+      setSnaps(api.scrollSnapList());
+      setSelected(api.selectedScrollSnap());
+    };
+    update();
+    api.on("reInit", update);
+    api.on("select", update);
+
+    return () => {
+      api.off("reInit", update);
+      api.off("select", update);
+    };
+  }, [api]);
+
+  if (snaps.length < 2) return null;
+
+  return (
+    <div
+      className={cn("flex items-center justify-center gap-2", className)}
+      {...props}
+    >
+      {snaps.map((_, index) => (
+        <button
+          key={index}
+          type="button"
+          aria-label={`Go to slide ${index + 1}`}
+          aria-current={index === selected}
+          onClick={() => api?.scrollTo(index)}
+          className={cn(
+            "h-2 rounded-full transition-all duration-300",
+            index === selected
+              ? "w-6 bg-terracotta"
+              : "w-2 bg-ink/20 hover:bg-ink/40",
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 export {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselDots,
   useCarousel,
 };

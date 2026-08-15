@@ -7,6 +7,7 @@ import {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselDots,
 } from "@/components/ui/carousel";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
@@ -15,14 +16,15 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
   const featuredProducts = await getActiveProducts(locale);
 
   return (
-    <section id="catalog" className="mx-auto max-w-330 px-4 py-20 sm:px-6">
-      <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-        <div>
+    <section id="catalog" className="mx-auto max-w-330 px-4 py-12 sm:px-6 sm:py-20">
+      <div className="mb-4 flex flex-wrap items-end justify-center gap-4 sm:mb-10 sm:justify-between">
+        {/* heading hidden on mobile to keep the section within one screen */}
+        <div className="hidden sm:block">
           <div
             aria-hidden="true"
-            className="mb-4 h-1.5 w-16 rounded-full bg-terracotta"
+            className="mb-3 h-1.5 w-16 rounded-full bg-terracotta sm:mb-4"
           />
-          <h2 className="font-display text-4xl uppercase tracking-wide sm:text-5xl">
+          <h2 className="font-display text-3xl uppercase tracking-wide sm:text-5xl">
             {dict.products.heading}
           </h2>
         </div>
@@ -44,14 +46,15 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
             {featuredProducts.map((product) => (
               <CarouselItem
                 key={product.id}
-                className="basis-full py-8 sm:basis-1/2 lg:basis-1/4"
+                className="basis-[72%] py-4 sm:basis-1/2 sm:py-8 lg:basis-1/4"
               >
                 <ProductCard product={product} dict={dict} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
+          <CarouselDots className="mt-3 sm:hidden" />
         </Carousel>
       )}
     </section>
