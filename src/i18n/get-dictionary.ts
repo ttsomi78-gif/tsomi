@@ -34,6 +34,14 @@ export interface Dictionary {
     castEyebrow: string;
     castIntro: string;
     characters: { trait: string; title: string; text: string }[];
+    gallery: {
+      prev: string;
+      next: string;
+      look: string;
+      artEyebrow: string;
+      artHeading: string;
+      artIntro: string;
+    };
     madeIn: { eyebrow: string; heading: string; text: string };
     manifesto: { heading: string; items: string[]; closing: string };
   };

@@ -5,51 +5,31 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
-import {
-  BicycleIcon,
-  KhachapuriIcon,
-  KhinkaliIcon,
-  KhinkaliWomanIcon,
-  ThreeKhinkaliIcon,
-} from "./khinkali";
+import { CharacterGallery } from "./character-gallery";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const icons = [
-  <KhinkaliIcon key="khinkali-man" className="h-8 w-auto" />,
-  <KhinkaliWomanIcon key="khinkali-woman" className="h-8 w-auto" />,
-  <BicycleIcon key="minimalist" className="h-8 w-auto" />,
-  <KhachapuriIcon key="khachapuri-man" className="h-8 w-auto" />,
-  <ThreeKhinkaliIcon key="three-khinkali" className="h-8 w-auto" />,
+/*
+ * Art-only prints (no story text) shown as a masonry gallery wall.
+ * Intrinsic dimensions keep next/image from shifting the columns.
+ */
+const artPieces = [
+  { src: "/characters/v2/art-statues.jpg", width: 1240, height: 1339 },
+  { src: "/characters/v2/art-adjaruli-pink.jpg", width: 1226, height: 966 },
+  { src: "/characters/v2/art-bouquet.jpg", width: 891, height: 1189 },
+  { src: "/characters/v2/art-eyes.jpg", width: 1240, height: 528 },
+  { src: "/characters/v2/art-adjaruli-green.jpg", width: 994, height: 877 },
+  { src: "/characters/v2/art-adjaruli.jpg", width: 918, height: 1034 },
+  { src: "/characters/v2/art-adjaruli-blue.jpg", width: 1240, height: 976 },
+  { src: "/characters/v2/art-khinkali.jpg", width: 393, height: 363 },
+  { src: "/characters/v2/art-adjaruli-sunny.jpg", width: 1119, height: 988 },
 ];
-const images = [
-  "/characters/khinkali-man.jpg",
-  "/characters/khinkali-woman.jpg",
-  "/characters/minimalist.jpg",
-  "/characters/khachapuri-man.jpg",
-  "/characters/supra.jpg",
-];
-const rotations = [
-  "md:-rotate-2",
-  "md:rotate-1",
-  "md:-rotate-1",
-  "md:rotate-2",
-  "md:-rotate-1",
-];
-const cardImageSizes =
-  "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw";
+
+const artImageSizes = "(min-width: 640px) 33vw, 50vw";
 
 export function Story({ dict }: { dict: Dictionary }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const characters = dict.story.characters.map((character, index) => ({
-    ...character,
-    number: `0${index + 1}`,
-    icon: icons[index],
-    image: images[index],
-    rotate: rotations[index],
-  }));
 
   useGSAP(
     () => {
@@ -57,9 +37,7 @@ export function Story({ dict }: { dict: Dictionary }) {
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const reveals = sectionRef.current
         ? Array.from(
-            sectionRef.current.querySelectorAll<HTMLElement>(
-              ".story-card, .story-reveal",
-            ),
+            sectionRef.current.querySelectorAll<HTMLElement>(".story-reveal"),
           )
         : [];
       if (!reveals.length) return;
@@ -117,49 +95,36 @@ export function Story({ dict }: { dict: Dictionary }) {
           {dict.story.castIntro}
         </p>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {characters.map((character) => (
-            <div key={character.title} className="story-card">
-              <motion.article
-                whileHover={{ y: -6, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-cream/15 bg-gradient-to-b from-pine to-pine/80 shadow-lg shadow-black/10 transition-colors duration-300 hover:border-yolk/60 hover:shadow-2xl hover:shadow-black/30 ${character.rotate}`}
-              >
-                <div className="relative aspect-4/5 overflow-hidden">
-                  <Image
-                    src={character.image}
-                    alt={character.title}
-                    fill
-                    sizes={cardImageSizes}
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-pine/90 to-transparent"
-                  />
-                  <span className="font-display absolute right-4 top-4 rounded-full bg-ink/50 px-3 py-1 text-sm text-cream/80 backdrop-blur-sm">
-                    {character.number}
-                  </span>
-                  <motion.span
-                    whileHover={{ rotate: [0, -8, 8, 0], scale: 1.08 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute bottom-4 left-4 inline-flex items-center justify-center rounded-xl bg-ink/50 p-2.5 text-yolk backdrop-blur-sm transition-colors group-hover:bg-yolk/20"
-                  >
-                    {character.icon}
-                  </motion.span>
-                </div>
-                <div className="flex flex-1 flex-col p-6 pt-5">
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-yolk/80">
-                    {character.trait}
-                  </p>
-                  <h3 className="font-display text-xl uppercase tracking-wide">
-                    {character.title}
-                  </h3>
-                  <p className="mt-3 leading-relaxed text-cream/60">
-                    {character.text}
-                  </p>
-                </div>
-              </motion.article>
+        <div className="mt-10">
+          <CharacterGallery dict={dict} />
+        </div>
+
+        {/* gallery wall — art without words */}
+        <div className="story-reveal mt-24">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-yolk">
+            {dict.story.gallery.artEyebrow}
+          </p>
+          <h3 className="font-display mt-3 max-w-2xl text-3xl uppercase leading-tight tracking-wide sm:text-4xl">
+            {dict.story.gallery.artHeading}
+          </h3>
+          <p className="mt-4 max-w-2xl leading-relaxed text-cream/60">
+            {dict.story.gallery.artIntro}
+          </p>
+        </div>
+        <div className="mt-8 columns-2 gap-4 sm:columns-3 sm:gap-5">
+          {artPieces.map((piece) => (
+            <div
+              key={piece.src}
+              className="story-reveal group mb-4 break-inside-avoid overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/15 sm:mb-5"
+            >
+              <Image
+                src={piece.src}
+                alt=""
+                width={piece.width}
+                height={piece.height}
+                sizes={artImageSizes}
+                className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.04]"
+              />
             </div>
           ))}
         </div>

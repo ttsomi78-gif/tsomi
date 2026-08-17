@@ -78,6 +78,15 @@ const dictionary: Dictionary = {
         text: "Three best friends who look different, think different and live different — and still share one table. Because real friendship doesn't need matching: you can be completely unalike and still sit down together.",
       },
     ],
+    gallery: {
+      prev: "Previous character",
+      next: "Next character",
+      look: "Look {n}",
+      artEyebrow: "The TSOMI gallery",
+      artHeading: "Dough as art",
+      artIntro:
+        "Some pieces don't need a story — just a look. Khachapuri, khinkali and friends as art objects.",
+    },
     madeIn: {
       eyebrow: "Made in Georgia",
       heading: "Almost everything is born in Batumi",
