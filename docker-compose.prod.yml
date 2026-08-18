@@ -41,8 +41,10 @@ services:
     build:
       context: .
     restart: unless-stopped
+    # Bound to loopback, not 0.0.0.0: the only public way in is Caddy on 443.
+    # Keeping the port lets you curl it over an SSH tunnel when debugging.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     env_file: .env.production
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-tsomi}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tsomi}
@@ -52,5 +54,26 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # TLS terminator. Caddy gets and renews Let's Encrypt certificates on its own,
+  # which is why ports 80 and 443 must both be free and publicly reachable —
+  # the HTTP-01 challenge arrives on 80.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in .env.production}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # issued certificates — losing this re-requests them
+      - caddy_config:/config
+    depends_on:
+      - web
+
 volumes:
   tsomi_pgdata:
+  caddy_data:
+  caddy_config:

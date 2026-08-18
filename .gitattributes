@@ -1,0 +1,8 @@
+# These are executed inside Linux containers / on the VPS. Checked out with
+# CRLF (the Windows default) a shell script dies on `bad interpreter: ^M`, so
+# pin the files that cross the OS boundary to LF.
+*.sh        text eol=lf
+Caddyfile   text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.sql       text eol=lf

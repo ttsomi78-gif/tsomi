@@ -1,4 +1,4 @@
-import { getProductStats } from "@/db/queries";
+import { getOrderStats, getProductStats } from "@/db/queries";
 import { Sidebar } from "./sidebar";
 import { MobileTopbar } from "./mobile-topbar";
 
@@ -9,11 +9,17 @@ export const dynamic = "force-dynamic";
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const stats = await getProductStats();
+  const [stats, orderStats] = await Promise.all([
+    getProductStats(),
+    getOrderStats(),
+  ]);
 
   return (
     <div className="min-h-screen bg-cream text-ink lg:flex">
-      <Sidebar productCount={stats.total} />
+      <Sidebar
+        productCount={stats.total}
+        pendingOrderCount={orderStats.pending}
+      />
 
       <div className="flex-1">
         <MobileTopbar />

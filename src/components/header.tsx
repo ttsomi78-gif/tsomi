@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "./language-switcher";
 import { MobileMenu } from "./mobile-menu";
+import { CartButton } from "./cart-button";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
@@ -46,6 +47,7 @@ export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary })
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher locale={locale} label={dict.language.label} />
+            <CartButton label={dict.cart.open} />
             <Link
               href={`/${locale}/catalog`}
               className="hidden rounded-full bg-ink px-5 py-2 text-sm font-bold uppercase tracking-wide text-cream shadow-md shadow-ink/15 transition-all hover:bg-terracotta hover:shadow-lg hover:shadow-terracotta/25 md:inline-flex"

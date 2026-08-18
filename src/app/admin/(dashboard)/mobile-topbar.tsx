@@ -15,6 +15,12 @@ export function MobileTopbar() {
           >
             Products
           </Link>
+          <Link
+            href="/admin/orders"
+            className="text-sm font-semibold uppercase tracking-wide transition-colors hover:text-terracotta"
+          >
+            Orders
+          </Link>
           <form action={logout}>
             <button
               type="submit"

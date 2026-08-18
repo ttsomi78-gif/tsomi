@@ -29,13 +29,43 @@ function ProductsIcon({ className }: { className?: string }) {
   );
 }
 
+function OrdersIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path
+        d="M6 7h12l-1.2 12.2A2 2 0 0 1 14.8 21H9.2a2 2 0 0 1-2-1.8L6 7Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 7V5.5a3 3 0 0 1 6 0V7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: DashboardIcon, exact: true },
   { href: "/admin/products", label: "Products", icon: ProductsIcon, exact: false },
+  { href: "/admin/orders", label: "Orders", icon: OrdersIcon, exact: false },
 ] as const;
 
-export function Sidebar({ productCount }: { productCount: number }) {
+export function Sidebar({
+  productCount,
+  pendingOrderCount,
+}: {
+  productCount: number;
+  pendingOrderCount: number;
+}) {
   const pathname = usePathname();
+  const badges: Record<string, number> = {
+    "/admin/products": productCount,
+    "/admin/orders": pendingOrderCount,
+  };
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-ink text-cream lg:sticky lg:top-0 lg:flex lg:h-screen">
@@ -63,13 +93,13 @@ export function Sidebar({ productCount }: { productCount: number }) {
             >
               <Icon className="h-5 w-5 shrink-0" />
               <span>{label}</span>
-              {href === "/admin/products" && (
+              {badges[href] !== undefined && badges[href] > 0 && (
                 <span
                   className={`ml-auto rounded-full px-2 py-0.5 text-xs ${
                     active ? "bg-ink/10 text-ink" : "bg-cream/10 text-cream/70"
                   }`}
                 >
-                  {productCount}
+                  {badges[href]}
                 </span>
               )}
             </Link>

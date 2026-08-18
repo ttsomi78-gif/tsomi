@@ -1,0 +1,35 @@
+# Reverse proxy + automatic HTTPS for the TSOMI storefront.
+# SITE_DOMAIN comes from .env.production via docker-compose.prod.yml.
+#
+# Certificates are issued on first request to the domain, so DNS must already
+# point at this server before `docker compose up` — otherwise Caddy's ACME
+# challenge fails and it retries with a backoff.
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+
+	# `web` is the compose service name; 3000 is the container port, not the
+	# loopback publish. This traffic never leaves the compose network.
+	reverse_proxy web:3000
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
+
+# One canonical origin: BOG's callback and redirect URLs are built from
+# SITE_URL, and serving the same content on two hostnames invites a mismatch.
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}

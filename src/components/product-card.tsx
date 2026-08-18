@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { categories, type Product } from "@/lib/products";
 import { formatGel } from "@/lib/money";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export const productImageSizes =
@@ -108,18 +109,21 @@ export function ProductCard({
               {product.georgian}
             </p>
           </div>
-          <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink/[0.06] pt-3">
-            <span className="font-display text-lg text-terracotta">
-              {formatGel(product.price)} ₾
-            </span>
-            <button
-              type="button"
-              onClick={() => setZoomed(true)}
-              aria-label={`Zoom in on ${product.name}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-sand text-ink ring-1 ring-tan/50 transition-all duration-200 hover:bg-yolk hover:ring-yolk active:scale-95"
-            >
-              <ZoomIcon className="h-4 w-4" />
-            </button>
+          <div className="mt-auto flex flex-col gap-3 border-t border-ink/[0.06] pt-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-display text-lg text-terracotta">
+                {formatGel(product.price)} ₾
+              </span>
+              <button
+                type="button"
+                onClick={() => setZoomed(true)}
+                aria-label={`Zoom in on ${product.name}`}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-sand text-ink ring-1 ring-tan/50 transition-all duration-200 hover:bg-yolk hover:ring-yolk active:scale-95"
+              >
+                <ZoomIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <AddToCartButton product={product} dict={dict} className="w-full py-2.5" />
           </div>
         </div>
       </motion.article>
