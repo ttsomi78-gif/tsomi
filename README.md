@@ -1,8 +1,11 @@
 # TSOMI — ცომი
 
 Storefront + admin panel for TSOMI, a Georgian streetwear brand. Next.js 15
-(App Router), Tailwind CSS 4, Drizzle ORM + Postgres, Supabase Storage for
-product photos, GSAP/Motion for animation. Four locales: en, ru, ka, ja.
+(App Router), Tailwind CSS 4, Drizzle ORM + Postgres, GSAP/Motion for
+animation, Bank of Georgia for card payments. Four locales: en, ru, ka, ja.
+
+Everything runs on one server — database, product photos and app alike. There
+is no external storage or database service to depend on.
 
 ## Local development
 
