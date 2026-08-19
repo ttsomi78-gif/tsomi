@@ -27,6 +27,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Must exist in the image, owned by the runtime user, *before* the uploads
+# volume is mounted over it: Docker seeds a new named volume from the image
+# directory's ownership, but creates it root-owned when the path is absent —
+# and then the server (running as nextjs) can't write a single photo.
+RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000

@@ -48,6 +48,12 @@ services:
     env_file: .env.production
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-tsomi}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tsomi}
+      UPLOADS_DIR: /app/uploads
+    volumes:
+      # Product photos. Has to be a volume, not a path inside the image —
+      # `public/` is baked in at build time and every upload would vanish on
+      # the next deploy. Back this up alongside the database.
+      - tsomi_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -75,5 +81,6 @@ services:
 
 volumes:
   tsomi_pgdata:
+  tsomi_uploads:
   caddy_data:
   caddy_config:

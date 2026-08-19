@@ -33,6 +33,23 @@ if [ ! -s "$target" ]; then
 	exit 1
 fi
 
-find "$BACKUP_DIR" -name 'tsomi-*.sql.gz' -mtime "+$KEEP_DAYS" -delete
+# Product photos live in the uploads volume, not in git — a database dump alone
+# would restore a catalog whose every image 404s.
+#
+# Tarred from inside the container rather than by mounting the volume by name:
+# compose prefixes volume names with the project, so a hardcoded `-v
+# tsomi_uploads` would quietly create a new empty volume and back up nothing.
+uploads="$BACKUP_DIR/uploads-$stamp.tar.gz"
+docker compose --env-file .env.production -f docker-compose.prod.yml exec -T web \
+	tar czf - -C /app/uploads . >"$uploads"
 
-echo "$(date -u +%FT%TZ) backup ok: $target ($(du -h "$target" | cut -f1))"
+if [ ! -s "$uploads" ]; then
+	echo "$(date -u +%FT%TZ) BACKUP FAILED: $uploads is empty" >&2
+	rm -f "$uploads"
+	exit 1
+fi
+
+find "$BACKUP_DIR" -name 'tsomi-*.sql.gz' -mtime "+$KEEP_DAYS" -delete
+find "$BACKUP_DIR" -name 'uploads-*.tar.gz' -mtime "+$KEEP_DAYS" -delete
+
+echo "$(date -u +%FT%TZ) backup ok: $target ($(du -h "$target" | cut -f1)), $uploads ($(du -h "$uploads" | cut -f1))"

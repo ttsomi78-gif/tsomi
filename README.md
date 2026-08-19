@@ -24,8 +24,9 @@ npm run dev
 Open http://localhost:3000 — the admin panel lives at `/admin`.
 
 - `ADMIN_PASSWORD_HASH` comes from `npx tsx scripts/hash-password.ts "<password>"`.
-- Product photo uploads need `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
-  (a Supabase project with a public `products` storage bucket).
+- Product photos uploaded from the admin panel are written to `UPLOADS_DIR`
+  (`./uploads` locally, gitignored) and served back from `/uploads/<name>`. No
+  external storage service is involved.
 
 ## Production deploy (VPS, Docker)
 
@@ -137,6 +138,6 @@ orders sit `pending` until the status page reconciles them.
   next deploy. (Local dev can keep using `npm run db:push`.)
 - **Managed DB instead of the bundled one**: remove the `db`/`migrate`
   services from the compose file and set `DATABASE_URL` in `.env.production`.
-- **Backups**: the catalog lives in the `tsomi_pgdata` volume —
-  `docker exec <db-container> pg_dump -U tsomi tsomi > backup.sql` on a cron
-  is the minimum; photos live in Supabase Storage.
+- **Backups**: two volumes matter — `tsomi_pgdata` (catalog + every order) and
+  `tsomi_uploads` (product photos). [scripts/backup-db.sh](scripts/backup-db.sh)
+  captures both; see the Backups section above.

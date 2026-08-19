@@ -1,47 +1,81 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
+import path from "node:path";
 
-const BUCKET = "products";
+/**
+ * Product photo storage, on the server's own disk.
+ *
+ * In production `UPLOADS_DIR` points at a Docker volume mounted into the web
+ * container — it must NOT live under `public/`, which is baked into the image
+ * at build time and would drop every upload on the next deploy.
+ *
+ * Files are served back by `src/app/uploads/[name]/route.ts`.
+ */
 
-function getStorageClient() {
-  const url = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    throw new Error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set");
-  }
-  return createClient(url, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
+/** URL prefix the upload route serves from. Stored in `products.image_url`. */
+export const UPLOADS_URL_PREFIX = "/uploads";
+
+/** Matches `serverActions.bodySizeLimit` in next.config.ts. */
+const MAX_BYTES = 10 * 1024 * 1024;
+
+/** Allowed upload types → the extension we save under. */
+const EXTENSION_BY_TYPE = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+  ["image/avif", "avif"],
+  ["image/gif", "gif"],
+]);
+
+/**
+ * Exactly the shape `uploadProductImage` writes: a UUID plus a short extension.
+ * The serving route reuses it, which is what makes path traversal impossible —
+ * no slashes and no `..` can match.
+ */
+export const SAFE_UPLOAD_NAME =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]{3,4}$/;
+
+export function getUploadsDir(): string {
+  return process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
 }
 
-/** Uploads a product image and returns its public URL. */
+/** Saves a product image and returns the URL to store on the product row. */
 export async function uploadProductImage(file: File): Promise<string> {
-  const supabase = getStorageClient();
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${crypto.randomUUID()}.${ext}`;
+  const extension = EXTENSION_BY_TYPE.get(file.type);
+  if (!extension) {
+    throw new Error(
+      `Unsupported image type "${file.type || "unknown"}" — use JPEG, PNG, WebP, AVIF or GIF`,
+    );
+  }
+  if (file.size > MAX_BYTES) {
+    throw new Error("Image is larger than 10MB");
+  }
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
+  // The name is ours, never the client's: an uploaded filename is attacker
+  // input and has no business reaching a filesystem path.
+  const name = `${randomUUID()}.${extension}`;
+  const directory = getUploadsDir();
 
-  if (error) throw new Error(`Image upload failed: ${error.message}`);
+  await mkdir(directory, { recursive: true });
+  await writeFile(path.join(directory, name), Buffer.from(await file.arrayBuffer()));
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  return `${UPLOADS_URL_PREFIX}/${name}`;
 }
 
 /** Best-effort delete of a previously uploaded product image. Never throws. */
 export async function deleteProductImageByUrl(url: string | null | undefined) {
-  if (!url) return;
-  const marker = `/storage/v1/object/public/${BUCKET}/`;
-  const index = url.indexOf(marker);
-  if (index === -1) return; // not a Supabase Storage URL (e.g. a static /public path) — nothing to clean up
+  if (!url || !url.startsWith(`${UPLOADS_URL_PREFIX}/`)) return;
 
-  const path = url.slice(index + marker.length);
+  // Seeded products point at static `/products/*.jpg` files in the repo, and
+  // older rows may hold a full remote URL. Neither is ours to delete.
+  const name = url.slice(UPLOADS_URL_PREFIX.length + 1);
+  if (!SAFE_UPLOAD_NAME.test(name)) return;
+
   try {
-    const supabase = getStorageClient();
-    await supabase.storage.from(BUCKET).remove([path]);
+    await unlink(path.join(getUploadsDir(), name));
   } catch {
-    // Orphaned file is an acceptable trade-off — never block the DB write on storage cleanup.
+    // Orphaned file is an acceptable trade-off — never block the database
+    // write on storage cleanup.
   }
 }

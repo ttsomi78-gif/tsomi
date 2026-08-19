@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Product photos written by the admin panel (a Docker volume in production)
+/uploads
