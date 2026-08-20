@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SocialLinks } from "./social-links";
 import { socialLinks } from "@/lib/social";
+import { company } from "@/lib/company";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
@@ -19,7 +20,7 @@ export function Footer({ locale, dict }: { locale: LocaleId; dict: Dictionary })
       />
 
       <div className="relative mx-auto max-w-330 px-4 pt-14 sm:px-6 lg:pt-16">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[auto_1fr_auto] lg:gap-16">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[auto_1fr_1fr_auto] lg:gap-16">
           {/* brand — cream monochrome lockup on the dark ground */}
           <div className="max-w-xs sm:col-span-2 lg:col-span-1">
             <div className="inline-flex flex-col items-center">
@@ -55,6 +56,29 @@ export function Footer({ locale, dict }: { locale: LocaleId; dict: Dictionary })
             </Link>
           </nav>
 
+          {/* info — the policy pages the bank's merchant review looks for */}
+          <nav className="flex flex-col gap-3 text-sm lg:justify-self-center">
+            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-yolk/80">
+              {dict.footer.info}
+            </span>
+            {(
+              [
+                ["shipping", dict.footer.shipping],
+                ["terms", dict.footer.terms],
+                ["privacy", dict.footer.privacy],
+                ["contact", dict.footer.contact],
+              ] as const
+            ).map(([slug, label]) => (
+              <Link
+                key={slug}
+                href={`/${locale}/${slug}`}
+                className="w-fit text-cream/70 transition-colors hover:text-yolk"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+
           {/* social */}
           <div className="flex flex-col gap-3 text-sm">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-yolk/80">
@@ -73,7 +97,10 @@ export function Footer({ locale, dict }: { locale: LocaleId; dict: Dictionary })
         </div>
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-cream/10 py-6 text-xs font-semibold uppercase tracking-[0.25em] text-cream/40">
-          <span>{dict.footer.copyright}</span>
+          <span>
+            {dict.footer.copyright} ·{" "}
+            {locale === "ka" ? company.legalNameKa : company.legalName}
+          </span>
           <span>{dict.footer.tagline}</span>
         </div>
       </div>

@@ -19,5 +19,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: locale === "en" ? 0.9 : 0.7,
     },
+    ...(["shipping", "terms", "privacy", "contact"] as const).map((slug) => ({
+      url: `${siteUrl}/${locale}/${slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    })),
   ]);
 }

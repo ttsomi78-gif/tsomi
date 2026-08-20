@@ -60,6 +60,11 @@ export interface Dictionary {
     social: string;
     copyright: string;
     tagline: string;
+    info: string;
+    terms: string;
+    privacy: string;
+    shipping: string;
+    contact: string;
   };
   catalog: {
     heading: string;

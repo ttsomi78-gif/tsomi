@@ -120,6 +120,11 @@ const dictionary: Dictionary = {
     social: "Social",
     copyright: "© 2026 TSOMI · Tbilisi, Georgia",
     tagline: "Made of dough",
+    info: "Info",
+    terms: "Terms of Service",
+    privacy: "Privacy Policy",
+    shipping: "Delivery & Returns",
+    contact: "Contact",
   },
   catalog: {
     heading: "The Catalog",

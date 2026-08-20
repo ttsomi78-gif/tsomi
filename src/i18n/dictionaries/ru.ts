@@ -120,6 +120,11 @@ const dictionary: Dictionary = {
     social: "Соцсети",
     copyright: "© 2026 TSOMI · Тбилиси, Грузия",
     tagline: "Сделано из теста",
+    info: "Информация",
+    terms: "Условия использования",
+    privacy: "Конфиденциальность",
+    shipping: "Доставка и возврат",
+    contact: "Контакты",
   },
   catalog: {
     heading: "Каталог",

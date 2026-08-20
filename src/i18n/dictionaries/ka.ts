@@ -120,6 +120,11 @@ const dictionary: Dictionary = {
     social: "სოც. ქსელები",
     copyright: "© 2026 TSOMI · თბილისი, საქართველო",
     tagline: "დამზადებულია ცომისგან",
+    info: "ინფორმაცია",
+    terms: "წესები და პირობები",
+    privacy: "კონფიდენციალურობა",
+    shipping: "მიწოდება და დაბრუნება",
+    contact: "კონტაქტი",
   },
   catalog: {
     heading: "კატალოგი",

@@ -120,6 +120,11 @@ const dictionary: Dictionary = {
     social: "SNS",
     copyright: "© 2026 TSOMI · トビリシ、ジョージア",
     tagline: "生地でできています",
+    info: "インフォメーション",
+    terms: "利用規約",
+    privacy: "プライバシーポリシー",
+    shipping: "配送と返品",
+    contact: "お問い合わせ",
   },
   catalog: {
     heading: "カタログ",
