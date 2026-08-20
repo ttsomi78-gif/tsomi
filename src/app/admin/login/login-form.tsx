@@ -16,11 +16,13 @@ export function LoginForm() {
     <form action={formAction} className="space-y-5">
       <label className="block">
         <span className="mb-1.5 block text-sm font-semibold uppercase tracking-wide text-ink/70">
-          Email
+          Login
         </span>
+        {/* Plain text on purpose: the admin login is whatever ADMIN_EMAIL says,
+            and the owner prefers a short name over an email address. */}
         <input
           name="email"
-          type="email"
+          type="text"
           autoComplete="username"
           required
           className={inputClass}

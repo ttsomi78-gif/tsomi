@@ -26,7 +26,7 @@ export async function login(
   const emailMatches = email === adminEmail;
 
   if (!emailMatches || !passwordMatches) {
-    return { error: "Invalid email or password" };
+    return { error: "Invalid login or password" };
   }
 
   await createSession(adminEmail);
