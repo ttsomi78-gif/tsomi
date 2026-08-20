@@ -1,17 +1,22 @@
-import type { Metadata } from "next";
 import { LegalPage, type LegalContent } from "@/components/legal-page";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getDeliveryFeeTetri } from "@/lib/orders";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { company } from "@/lib/company";
+import { buildPageMetadata } from "@/lib/seo";
 import type { LocaleId } from "@/lib/products";
 
 // The delivery fee is read from the environment at request time.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Delivery & Returns — TSOMI",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: LocaleId }>;
+}) {
+  const { locale } = await params;
+  return buildPageMetadata("shipping", locale, "/shipping");
+}
 
 const content = (fee: string): Record<LocaleId, LegalContent> => ({
   en: {

@@ -10,7 +10,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: "/admin",
+      // Checkout and order-status pages are per-customer; indexing them would
+      // be useless at best and a privacy leak at worst.
+      disallow: ["/admin", "/api/", "/*/checkout", "/*/order/"],
     },
     sitemap: `${getSiteUrl()}/sitemap.xml`,
   };

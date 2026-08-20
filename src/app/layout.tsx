@@ -22,20 +22,33 @@ const notoGeorgian = Noto_Serif_Georgian({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: "TSOMI — ცომი · Made in Georgia",
+  title: {
+    default: "TSOMI — ცომი · Made in Georgia",
+    // Pages set clean titles ("Catalog"); the brand is appended once, here.
+    template: "%s — TSOMI",
+  },
   description:
     "TSOMI (ცომი) — dough, worn daily. Khachapuri shoppers and khinkali tees, made in Georgia.",
+  applicationName: "TSOMI",
   openGraph: {
     type: "website",
     siteName: "TSOMI",
     title: "TSOMI — ცომი · Made in Georgia",
     description:
       "TSOMI (ცომი) — dough, worn daily. Khachapuri shoppers and khinkali tees, made in Georgia.",
-    images: ["/brand/logo-card.jpg"],
+    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "TSOMI — ცომი" }],
   },
   twitter: {
     card: "summary_large_image",
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export const viewport = {
+  themeColor: "#f6efe1",
 };
 
 export default function RootLayout({

@@ -1,14 +1,19 @@
-import type { Metadata } from "next";
 import { LegalPage, type LegalContent } from "@/components/legal-page";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { company } from "@/lib/company";
+import { buildPageMetadata } from "@/lib/seo";
 import type { LocaleId } from "@/lib/products";
 
 export const revalidate = 86400;
 
-export const metadata: Metadata = {
-  title: "Privacy Policy — TSOMI",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: LocaleId }>;
+}) {
+  const { locale } = await params;
+  return buildPageMetadata("privacy", locale, "/privacy");
+}
 
 const content: Record<LocaleId, LegalContent> = {
   en: {

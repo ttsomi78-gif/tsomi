@@ -1,19 +1,55 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { CatalogGrid } from "@/components/catalog-grid";
 import { getActiveProducts } from "@/db/queries";
 import { getDictionary } from "@/i18n/get-dictionary";
-import type { LocaleId } from "@/lib/products";
+import { buildPageMetadata } from "@/lib/seo";
+import { getSiteUrl } from "@/lib/site";
+import type { LocaleId, Product } from "@/lib/products";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Catalog — TSOMI",
-  description:
-    "The full TSOMI drop — khachapuri shoppers, khinkali tees, and more. Made in Georgia.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: LocaleId }>;
+}) {
+  const { locale } = await params;
+  return buildPageMetadata("catalog", locale, "/catalog");
+}
+
+/**
+ * Product list structured data — makes items eligible for Google's product
+ * rich results (price, availability) on catalog searches.
+ */
+function structuredData(products: Product[], locale: LocaleId) {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: products.map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: product.name,
+        image: `${siteUrl}${product.image}`,
+        url: `${siteUrl}/${locale}/catalog`,
+        brand: { "@type": "Brand", name: "TSOMI" },
+        offers: {
+          "@type": "Offer",
+          price: product.price.toFixed(2),
+          priceCurrency: "GEL",
+          availability:
+            product.stock > 0
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+        },
+      },
+    })),
+  };
+}
 
 export default async function CatalogPage({
   params,
@@ -28,6 +64,12 @@ export default async function CatalogPage({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData(products, locale)),
+        }}
+      />
       <Header locale={locale} dict={dict} />
       <main>
         {/* page head band */}
