@@ -63,49 +63,174 @@ function fileOrNull(value: FormDataEntryValue | null): File | null {
   return value instanceof File && value.size > 0 ? value : null;
 }
 
-export async function createProduct(
+const newColorSchema = z.object({
+  colorName: z.string().trim().min(1).max(40),
+  colorHex: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/),
+  sizes: z
+    .array(
+      z.object({
+        size: z
+          .string()
+          .trim()
+          .max(20)
+          .transform((value) => value || null),
+        stock: z.coerce.number().int().min(0).max(100000),
+      }),
+    )
+    .min(1, "Every color needs at least one size row")
+    .max(20),
+  /** How many files ride under this color's photos_{index} key. */
+  photoCount: z.number().int().min(0).max(8),
+});
+
+const newProductSchema = z.object({
+  nameEn: z.string().trim().min(1, "English name is required"),
+  nameRu: optionalText,
+  nameKa: optionalText,
+  nameJa: optionalText,
+  tagEn: optionalText,
+  tagRu: optionalText,
+  tagKa: optionalText,
+  tagJa: optionalText,
+  category: z.enum(["tees", "bags"]),
+  price: z.coerce.number().positive("Price must be greater than 0"),
+  colors: z.array(newColorSchema).min(1, "Add at least one color").max(12),
+});
+
+/**
+ * The single-screen create: global fields (name in four languages, category,
+ * price) plus one block per color — its photos, its sizes, quantity per size.
+ * Everything lands in one submit; there is no flat stock input anywhere, the
+ * total is the sum of what the colors declare.
+ */
+export async function createProductWithColors(
   _prevState: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
   await requireAdminSession();
 
-  const parsed = productSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const imageFile = fileOrNull(formData.get("image"));
-  if (!imageFile) return { error: "A product photo is required" };
-  const hoverFile = fileOrNull(formData.get("hoverImage"));
-
-  const {
-    nameEn, nameRu, nameKa, nameJa,
-    category, price,
-    altEn, altRu, altKa, altJa,
-    tagEn, tagRu, tagKa, tagJa,
-    stock,
-  } = parsed.data;
-  const id = slugify(nameEn);
-  if (!id) return { error: "Name must contain at least one letter or number" };
-
-  const imageUrl = await uploadProductImage(imageFile);
-  const hoverImageUrl = hoverFile ? await uploadProductImage(hoverFile) : null;
-
+  let parsed: z.infer<typeof newProductSchema>;
   try {
-    await db.insert(products).values({
-      id,
-      nameEn, nameRu: nameRu ?? null, nameKa: nameKa ?? null, nameJa: nameJa ?? null,
-      category,
-      priceTetri: gelToTetri(price),
-      imageUrl,
-      hoverImageUrl,
-      altEn, altRu: altRu ?? null, altKa: altKa ?? null, altJa: altJa ?? null,
-      tagEn: tagEn ?? null, tagRu: tagRu ?? null, tagKa: tagKa ?? null, tagJa: tagJa ?? null,
-      stock,
+    parsed = newProductSchema.parse({
+      ...Object.fromEntries(formData),
+      colors: JSON.parse(String(formData.get("colors") ?? "[]")),
     });
   } catch (error) {
-    await deleteProductImageByUrl(imageUrl);
-    await deleteProductImageByUrl(hoverImageUrl);
+    const issue = error instanceof z.ZodError ? error.issues[0]?.message : null;
+    return { error: issue ?? "Invalid input" };
+  }
+
+  const id = slugify(parsed.nameEn);
+  if (!id) return { error: "Name must contain at least one letter or number" };
+
+  // Per-color validation mirrors saveColor's rules.
+  const colorNames = new Set<string>();
+  for (const color of parsed.colors) {
+    const key = color.colorName.toLowerCase();
+    if (colorNames.has(key)) return { error: `Duplicate color "${color.colorName}"` };
+    colorNames.add(key);
+
+    const blanks = color.sizes.filter((row) => !row.size).length;
+    if (blanks > 0 && color.sizes.length > 1) {
+      return { error: `${color.colorName}: a "one size" row must be its only row` };
+    }
+    const sizes = new Set(color.sizes.map((row) => row.size ?? ""));
+    if (sizes.size !== color.sizes.length) {
+      return { error: `${color.colorName}: duplicate size` };
+    }
+  }
+
+  // Photos, keyed photos_{colorIndex}. The very first photo of the first color
+  // that has one becomes the catalog cover — no separate cover upload.
+  const uploadsPerColor: File[][] = parsed.colors.map((color, index) => {
+    const files = formData
+      .getAll(`photos_${index}`)
+      .filter((value): value is File => value instanceof File && value.size > 0);
+    return files.slice(0, color.photoCount || files.length);
+  });
+  if (!uploadsPerColor.some((files) => files.length > 0)) {
+    return { error: "Upload at least one photo — the first one becomes the cover" };
+  }
+
+  // Upload everything before touching the database; on a later failure the
+  // uploaded files are best-effort deleted.
+  const uploaded: { colorIndex: number; url: string }[] = [];
+  try {
+    for (let index = 0; index < uploadsPerColor.length; index++) {
+      for (const file of uploadsPerColor[index]) {
+        uploaded.push({ colorIndex: index, url: await uploadProductImage(file) });
+      }
+    }
+  } catch (error) {
+    await Promise.all(uploaded.map((u) => deleteProductImageByUrl(u.url)));
+    return {
+      error: error instanceof Error ? error.message : "Image upload failed",
+    };
+  }
+
+  const coverUrl = uploaded[0].url;
+  const totalStock = parsed.colors.reduce(
+    (sum, color) => sum + color.sizes.reduce((s, row) => s + row.stock, 0),
+    0,
+  );
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx.insert(products).values({
+        id,
+        nameEn: parsed.nameEn,
+        nameRu: parsed.nameRu ?? null,
+        nameKa: parsed.nameKa ?? null,
+        nameJa: parsed.nameJa ?? null,
+        category: parsed.category,
+        priceTetri: gelToTetri(parsed.price),
+        imageUrl: coverUrl,
+        hoverImageUrl: null,
+        // Alt text mirrors the name — descriptive enough for a product shot,
+        // and one less required field on the form.
+        altEn: parsed.nameEn,
+        altRu: parsed.nameRu ?? null,
+        altKa: parsed.nameKa ?? null,
+        altJa: parsed.nameJa ?? null,
+        tagEn: parsed.tagEn ?? null,
+        tagRu: parsed.tagRu ?? null,
+        tagKa: parsed.tagKa ?? null,
+        tagJa: parsed.tagJa ?? null,
+        stock: totalStock,
+      });
+
+      let variantOrder = 0;
+      await tx.insert(productVariants).values(
+        parsed.colors.flatMap((color) =>
+          color.sizes.map((row) => ({
+            id: randomUUID(),
+            productId: id,
+            colorName: color.colorName,
+            colorHex: color.colorHex,
+            size: row.size,
+            stock: row.stock,
+            sortOrder: variantOrder++,
+          })),
+        ),
+      );
+
+      if (uploaded.length > 0) {
+        await tx.insert(productImages).values(
+          uploaded.map((upload, index) => ({
+            id: randomUUID(),
+            productId: id,
+            url: upload.url,
+            colorName: parsed.colors[upload.colorIndex].colorName,
+            sortOrder: index,
+          })),
+        );
+      }
+    });
+  } catch (error) {
+    await Promise.all(uploaded.map((u) => deleteProductImageByUrl(u.url)));
     if (isUniqueViolation(error)) {
       return { error: `A product with a matching name/id ("${id}") already exists` };
     }
@@ -113,9 +238,7 @@ export async function createProduct(
   }
 
   revalidatePublicPages();
-  // Straight to the edit screen: colors, photos and per-size quantities are
-  // set there, and that's the immediate next step for every new product.
-  redirect(`/admin/products/${id}/edit`);
+  redirect("/admin/products");
 }
 
 export async function updateProduct(

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { categories, locales, localeLabels, type LocaleId } from "@/lib/products";
-import { createProduct, updateProduct, type ProductFormState } from "./actions";
+import { updateProduct, type ProductFormState } from "./actions";
 
 const initialState: ProductFormState = undefined;
 
@@ -40,7 +40,10 @@ export function ProductForm({
   /** True once the product has color/size variants — their sum owns the stock. */
   stockManagedByColors?: boolean;
 }) {
-  const action = product ? updateProduct.bind(null, product.id) : createProduct;
+  // Creation now goes through the single-screen wizard (new-product-form);
+  // this form only ever edits an existing product.
+  if (!product) throw new Error("ProductForm requires a product — use the create wizard");
+  const action = updateProduct.bind(null, product.id);
   const [state, formAction] = useActionState(action, initialState);
   const [activeLocale, setActiveLocale] = useState<LocaleId>("en");
   const formRef = useRef<HTMLFormElement>(null);
