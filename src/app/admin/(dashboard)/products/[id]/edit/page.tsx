@@ -6,8 +6,7 @@ import {
 } from "@/db/queries";
 import { tetriToGel } from "@/lib/money";
 import { ProductForm } from "../../product-form";
-import { VariantsEditor } from "../../variants-editor";
-import { ImagesEditor } from "../../images-editor";
+import { ColorsEditor } from "../../colors-editor";
 
 export default async function EditProductPage({
   params,
@@ -21,13 +20,41 @@ export default async function EditProductPage({
     getVariantsForProduct(id),
     getImagesForProduct(id),
   ]);
-  const colorNames = [
-    ...new Set(
-      variants
-        .map((variant) => variant.colorName)
-        .filter((name): name is string => !!name),
-    ),
-  ];
+
+  // Group the flat variant rows into one block per color for the editor.
+  const colorOrder: string[] = [];
+  const byColor = new Map<
+    string,
+    { colorHex: string; sizes: { size: string | null; stock: number }[] }
+  >();
+  for (const variant of variants) {
+    const name = variant.colorName ?? "";
+    if (!byColor.has(name)) {
+      colorOrder.push(name);
+      byColor.set(name, { colorHex: variant.colorHex ?? "#27211a", sizes: [] });
+    }
+    byColor.get(name)!.sizes.push({ size: variant.size, stock: variant.stock });
+  }
+
+  const colors = colorOrder
+    .filter((name) => name !== "")
+    .map((name) => ({
+      colorName: name,
+      colorHex: byColor.get(name)!.colorHex,
+      sizes: byColor.get(name)!.sizes,
+      images: images
+        .filter((image) => image.colorName === name)
+        .map((image) => ({
+          id: image.id,
+          url: image.url,
+          colorName: image.colorName,
+        })),
+      draft: false,
+    }));
+
+  const sharedImages = images
+    .filter((image) => image.colorName === null)
+    .map((image) => ({ id: image.id, url: image.url, colorName: image.colorName }));
 
   return (
     <div>
@@ -35,6 +62,7 @@ export default async function EditProductPage({
         Edit product
       </h1>
       <ProductForm
+        stockManagedByColors={variants.length > 0}
         product={{
           id: row.id,
           nameEn: row.nameEn,
@@ -56,24 +84,7 @@ export default async function EditProductPage({
           stock: row.stock,
         }}
       />
-      <VariantsEditor
-        productId={row.id}
-        initial={variants.map((variant) => ({
-          colorName: variant.colorName,
-          colorHex: variant.colorHex,
-          size: variant.size,
-          stock: variant.stock,
-        }))}
-      />
-      <ImagesEditor
-        productId={row.id}
-        images={images.map((image) => ({
-          id: image.id,
-          url: image.url,
-          colorName: image.colorName,
-        }))}
-        colorNames={colorNames}
-      />
+      <ColorsEditor productId={row.id} colors={colors} sharedImages={sharedImages} />
     </div>
   );
 }

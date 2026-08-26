@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
@@ -148,7 +148,7 @@ export async function updateProduct(
   } = parsed.data;
 
   // Once variants exist they own the stock — products.stock is their sum,
-  // maintained by saveVariants and the payment settle. A number typed into
+  // maintained by saveColor and the payment settle. A number typed into
   // the plain form field must not silently overwrite it.
   const variantRows = await db
     .select({ id: productVariants.id })
@@ -193,98 +193,169 @@ export async function deleteProduct(id: string) {
   revalidatePublicPages();
 }
 
-const variantRowSchema = z.object({
-  colorName: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .transform((value) => value || null),
+/** Re-derives products.stock as the variant sum. Call inside the transaction. */
+async function syncProductStock(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  productId: string,
+) {
+  const rows = await tx
+    .select({ stock: productVariants.stock })
+    .from(productVariants)
+    .where(eq(productVariants.productId, productId));
+  if (rows.length === 0) return; // no variants left — flat stock owns itself again
+  await tx
+    .update(products)
+    .set({
+      stock: rows.reduce((sum, row) => sum + row.stock, 0),
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, productId));
+}
+
+const colorSaveSchema = z.object({
+  colorName: z.string().trim().min(1).max(40),
   colorHex: z
     .string()
     .trim()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .optional()
-    .or(z.literal(""))
-    .transform((value) => value || null),
-  size: z
-    .string()
-    .trim()
-    .max(20)
-    .optional()
-    .transform((value) => value || null),
-  stock: z.coerce.number().int().min(0).max(100000),
+    .regex(/^#[0-9a-fA-F]{6}$/),
+  sizes: z
+    .array(
+      z.object({
+        size: z
+          .string()
+          .trim()
+          .max(20)
+          .transform((value) => value || null),
+        stock: z.coerce.number().int().min(0).max(100000),
+      }),
+    )
+    .min(1)
+    .max(20),
 });
 
-const variantsSchema = z.array(variantRowSchema).max(60);
-
-export type VariantsFormState = { error?: string; saved?: boolean } | undefined;
+export type ColorFormState = { error?: string; saved?: boolean } | undefined;
 
 /**
- * Replaces a product's variant grid wholesale and re-derives the product's
- * total stock from it. Replace-all keeps the admin's mental model simple —
- * what's on screen after save IS the grid, nothing lingers.
- *
- * Existing order_items keep their color/size snapshot; their variant_id goes
- * null via ON DELETE SET NULL, which only disables re-decrementing stock for
- * an already-settled order — nothing customer-visible.
+ * The one-stop per-color save: replaces every size row of ONE color and
+ * updates the product total. `previousName` carries renames — its rows are
+ * the ones being replaced.
  */
-export async function saveVariants(
+export async function saveColor(
   productId: string,
-  _prevState: VariantsFormState,
+  previousName: string | null,
+  _prevState: ColorFormState,
   formData: FormData,
-): Promise<VariantsFormState> {
+): Promise<ColorFormState> {
   await requireAdminSession();
 
   const existing = await getProductById(productId);
   if (!existing) return { error: "Product not found" };
 
-  let rows: z.infer<typeof variantsSchema>;
+  let parsed: z.infer<typeof colorSaveSchema>;
   try {
-    rows = variantsSchema.parse(JSON.parse(String(formData.get("variants") ?? "[]")));
+    parsed = colorSaveSchema.parse(JSON.parse(String(formData.get("color") ?? "")));
   } catch {
-    return { error: "Invalid variant data" };
+    return { error: "Fill in the color name and at least one size row" };
   }
 
-  // A row with neither color nor size is only meaningful alone (one-size,
-  // one-color product) — and then variants add nothing over flat stock.
-  if (rows.length > 0 && rows.some((row) => !row.colorName && !row.size)) {
-    return { error: "Every variant needs a color, a size, or both" };
+  // A blank size means "one size" — it only makes sense as the color's sole row.
+  const blankRows = parsed.sizes.filter((row) => !row.size).length;
+  if (blankRows > 0 && parsed.sizes.length > 1) {
+    return { error: 'A "one size" row must be the only row of its color' };
+  }
+  const sizeSet = new Set(parsed.sizes.map((row) => row.size ?? ""));
+  if (sizeSet.size !== parsed.sizes.length) {
+    return { error: "Duplicate size in this color" };
   }
 
-  const combos = new Set(
-    rows.map((row) => `${row.colorName ?? ""}::${row.size ?? ""}`),
-  );
-  if (combos.size !== rows.length) {
-    return { error: "Duplicate color/size combination" };
-  }
+  try {
+    await db.transaction(async (tx) => {
+      // Replace this color's rows only — other colors are untouched.
+      for (const name of new Set(
+        [previousName, parsed.colorName].filter((n): n is string => !!n),
+      )) {
+        await tx
+          .delete(productVariants)
+          .where(
+            and(
+              eq(productVariants.productId, productId),
+              eq(productVariants.colorName, name),
+            ),
+          );
+      }
 
-  await db.transaction(async (tx) => {
-    await tx.delete(productVariants).where(eq(productVariants.productId, productId));
-    if (rows.length > 0) {
+      const [maxRow] = await tx
+        .select({ max: sql<number>`coalesce(max(${productVariants.sortOrder}), -1)` })
+        .from(productVariants)
+        .where(eq(productVariants.productId, productId));
+      let order = (maxRow?.max ?? -1) + 1;
+
       await tx.insert(productVariants).values(
-        rows.map((row, index) => ({
+        parsed.sizes.map((row) => ({
           id: randomUUID(),
           productId,
-          colorName: row.colorName,
-          colorHex: row.colorHex,
+          colorName: parsed.colorName,
+          colorHex: parsed.colorHex,
           size: row.size,
           stock: row.stock,
-          sortOrder: index,
+          sortOrder: order++,
         })),
       );
-      // products.stock stays the variant total so every existing sold-out
-      // check and catalog badge keeps working.
-      const total = rows.reduce((sum, row) => sum + row.stock, 0);
-      await tx
-        .update(products)
-        .set({ stock: total, updatedAt: new Date() })
-        .where(eq(products.id, productId));
-    }
+
+      // A rename carries the color's photos along.
+      if (previousName && previousName !== parsed.colorName) {
+        await tx
+          .update(productImages)
+          .set({ colorName: parsed.colorName })
+          .where(
+            and(
+              eq(productImages.productId, productId),
+              eq(productImages.colorName, previousName),
+            ),
+          );
+      }
+
+      await syncProductStock(tx, productId);
+    });
+  } catch {
+    return { error: "Could not save — try again" };
+  }
+
+  revalidatePublicPages();
+  revalidatePath(`/admin/products/${productId}/edit`);
+  return { saved: true };
+}
+
+/**
+ * Removes a color: its size rows go, its photos stay but become "all colors"
+ * so no uploaded file is ever lost by this button.
+ */
+export async function removeColor(productId: string, colorName: string) {
+  await requireAdminSession();
+
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(productVariants)
+      .where(
+        and(
+          eq(productVariants.productId, productId),
+          eq(productVariants.colorName, colorName),
+        ),
+      );
+    await tx
+      .update(productImages)
+      .set({ colorName: null })
+      .where(
+        and(
+          eq(productImages.productId, productId),
+          eq(productImages.colorName, colorName),
+        ),
+      );
+    await syncProductStock(tx, productId);
   });
 
   revalidatePublicPages();
-  return { saved: true };
+  revalidatePath(`/admin/products/${productId}/edit`);
 }
 
 export type ImagesFormState = { error?: string; saved?: boolean } | undefined;

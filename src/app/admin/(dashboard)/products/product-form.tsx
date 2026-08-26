@@ -32,7 +32,14 @@ export type EditableProduct = {
   stock: number;
 };
 
-export function ProductForm({ product }: { product?: EditableProduct }) {
+export function ProductForm({
+  product,
+  stockManagedByColors = false,
+}: {
+  product?: EditableProduct;
+  /** True once the product has color/size variants — their sum owns the stock. */
+  stockManagedByColors?: boolean;
+}) {
   const action = product ? updateProduct.bind(null, product.id) : createProduct;
   const [state, formAction] = useActionState(action, initialState);
   const [activeLocale, setActiveLocale] = useState<LocaleId>("en");
@@ -96,15 +103,33 @@ export function ProductForm({ product }: { product?: EditableProduct }) {
             />
           </Field>
 
-          <Field label="Stock (units available)">
+          <Field
+            label={
+              stockManagedByColors
+                ? "Stock — set per color & size below"
+                : "Stock (units available)"
+            }
+          >
+            {/* Disabled inputs don't submit, so the real value rides in a
+                hidden field while the visible one is display-only. The server
+                ignores it anyway once variants exist — this is belt and braces. */}
+            {stockManagedByColors && (
+              <input type="hidden" name="stock" value={product?.stock ?? 0} />
+            )}
             <input
-              name="stock"
+              name={stockManagedByColors ? undefined : "stock"}
               type="number"
               step="1"
               min="0"
               defaultValue={product?.stock ?? 0}
-              required
-              className={inputClass}
+              required={!stockManagedByColors}
+              disabled={stockManagedByColors}
+              title={
+                stockManagedByColors
+                  ? "This product has colors/sizes — the total is the sum of their quantities"
+                  : undefined
+              }
+              className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
             />
           </Field>
         </div>
