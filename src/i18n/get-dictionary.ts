@@ -80,6 +80,8 @@ export interface Dictionary {
   product: {
     soldOut: string;
     lowStock: string;
+    color: string;
+    size: string;
   };
   cart: {
     title: string;

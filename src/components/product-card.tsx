@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { categories, type Product } from "@/lib/products";
+import { categories, productColors, type Product } from "@/lib/products";
 import { formatGel } from "@/lib/money";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -25,6 +25,15 @@ export function ProductCard({
   const soldOut = product.stock <= 0;
   const lowStock = !soldOut && product.stock <= LOW_STOCK_THRESHOLD;
   const categoryLabel = categories.find((c) => c.id === product.category)?.label;
+  const colors = productColors(product.variants);
+  /** Distinct sizes that are actually in stock, in variant order. */
+  const sizesInStock = [
+    ...new Set(
+      product.variants
+        .filter((variant) => variant.size && variant.stock > 0)
+        .map((variant) => variant.size as string),
+    ),
+  ];
 
   useEffect(() => {
     if (!zoomed) return;
@@ -108,22 +117,35 @@ export function ProductCard({
             <p className="font-georgian mt-0.5 text-sm text-ink/45">
               {product.georgian}
             </p>
+            {(colors.length > 0 || sizesInStock.length > 0) && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                {colors.length > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    {colors.map(({ colorName, colorHex }) => (
+                      <span
+                        key={colorName}
+                        title={colorName}
+                        className="h-4 w-4 rounded-full border border-ink/15 shadow-sm"
+                        style={{ backgroundColor: colorHex ?? "#d2bd9c" }}
+                      />
+                    ))}
+                  </span>
+                )}
+                {sizesInStock.length > 0 && (
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ink/45">
+                    {sizesInStock.join(" · ")}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-          <div className="mt-auto flex flex-col gap-3 border-t border-ink/[0.06] pt-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-display text-lg text-terracotta">
-                {formatGel(product.price)} ₾
-              </span>
-              <button
-                type="button"
-                onClick={() => setZoomed(true)}
-                aria-label={`Zoom in on ${product.name}`}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-sand text-ink ring-1 ring-tan/50 transition-all duration-200 hover:bg-yolk hover:ring-yolk active:scale-95"
-              >
-                <ZoomIcon className="h-4 w-4" />
-              </button>
-            </div>
-            <AddToCartButton product={product} dict={dict} className="w-full py-2.5" />
+          {/* one compact row: price left, add-to-cart right — zooming is the
+              image's job (tap the photo or its corner chip) */}
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink/[0.06] pt-3">
+            <span className="font-display text-lg text-terracotta">
+              {formatGel(product.price)} ₾
+            </span>
+            <AddToCartButton product={product} dict={dict} className="py-2.5" />
           </div>
         </div>
       </motion.article>

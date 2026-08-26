@@ -1,11 +1,12 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
-import { products } from "@/db/schema";
+import { products, productVariants } from "@/db/schema";
 import { getProductById } from "@/db/queries";
 import { requireAdminSession } from "@/lib/session";
 import { uploadProductImage, deleteProductImageByUrl } from "@/lib/storage";
@@ -146,6 +147,16 @@ export async function updateProduct(
     stock,
   } = parsed.data;
 
+  // Once variants exist they own the stock — products.stock is their sum,
+  // maintained by saveVariants and the payment settle. A number typed into
+  // the plain form field must not silently overwrite it.
+  const variantRows = await db
+    .select({ id: productVariants.id })
+    .from(productVariants)
+    .where(eq(productVariants.productId, id))
+    .limit(1);
+  const hasVariants = variantRows.length > 0;
+
   await db
     .update(products)
     .set({
@@ -156,7 +167,7 @@ export async function updateProduct(
       hoverImageUrl,
       altEn, altRu: altRu ?? null, altKa: altKa ?? null, altJa: altJa ?? null,
       tagEn: tagEn ?? null, tagRu: tagRu ?? null, tagKa: tagKa ?? null, tagJa: tagJa ?? null,
-      stock,
+      ...(hasVariants ? {} : { stock }),
       updatedAt: new Date(),
     })
     .where(eq(products.id, id));
@@ -180,6 +191,100 @@ export async function deleteProduct(id: string) {
   }
 
   revalidatePublicPages();
+}
+
+const variantRowSchema = z.object({
+  colorName: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((value) => value || null),
+  colorHex: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional()
+    .or(z.literal(""))
+    .transform((value) => value || null),
+  size: z
+    .string()
+    .trim()
+    .max(20)
+    .optional()
+    .transform((value) => value || null),
+  stock: z.coerce.number().int().min(0).max(100000),
+});
+
+const variantsSchema = z.array(variantRowSchema).max(60);
+
+export type VariantsFormState = { error?: string; saved?: boolean } | undefined;
+
+/**
+ * Replaces a product's variant grid wholesale and re-derives the product's
+ * total stock from it. Replace-all keeps the admin's mental model simple —
+ * what's on screen after save IS the grid, nothing lingers.
+ *
+ * Existing order_items keep their color/size snapshot; their variant_id goes
+ * null via ON DELETE SET NULL, which only disables re-decrementing stock for
+ * an already-settled order — nothing customer-visible.
+ */
+export async function saveVariants(
+  productId: string,
+  _prevState: VariantsFormState,
+  formData: FormData,
+): Promise<VariantsFormState> {
+  await requireAdminSession();
+
+  const existing = await getProductById(productId);
+  if (!existing) return { error: "Product not found" };
+
+  let rows: z.infer<typeof variantsSchema>;
+  try {
+    rows = variantsSchema.parse(JSON.parse(String(formData.get("variants") ?? "[]")));
+  } catch {
+    return { error: "Invalid variant data" };
+  }
+
+  // A row with neither color nor size is only meaningful alone (one-size,
+  // one-color product) — and then variants add nothing over flat stock.
+  if (rows.length > 0 && rows.some((row) => !row.colorName && !row.size)) {
+    return { error: "Every variant needs a color, a size, or both" };
+  }
+
+  const combos = new Set(
+    rows.map((row) => `${row.colorName ?? ""}::${row.size ?? ""}`),
+  );
+  if (combos.size !== rows.length) {
+    return { error: "Duplicate color/size combination" };
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.delete(productVariants).where(eq(productVariants.productId, productId));
+    if (rows.length > 0) {
+      await tx.insert(productVariants).values(
+        rows.map((row, index) => ({
+          id: randomUUID(),
+          productId,
+          colorName: row.colorName,
+          colorHex: row.colorHex,
+          size: row.size,
+          stock: row.stock,
+          sortOrder: index,
+        })),
+      );
+      // products.stock stays the variant total so every existing sold-out
+      // check and catalog badge keeps working.
+      const total = rows.reduce((sum, row) => sum + row.stock, 0);
+      await tx
+        .update(products)
+        .set({ stock: total, updatedAt: new Date() })
+        .where(eq(products.id, productId));
+    }
+  });
+
+  revalidatePublicPages();
+  return { saved: true };
 }
 
 export async function toggleActive(formData: FormData) {

@@ -128,6 +128,12 @@ export default async function OrderPage({
               <li key={item.id} className="flex items-baseline justify-between gap-3 text-sm">
                 <span className="min-w-0">
                   <span className="font-semibold">{item.name}</span>
+                  {(item.color || item.size) && (
+                    <span className="text-ink/55">
+                      {" "}
+                      ({[item.color, item.size].filter(Boolean).join(", ")})
+                    </span>
+                  )}
                   <span className="text-ink/45"> × {item.quantity}</span>
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums">

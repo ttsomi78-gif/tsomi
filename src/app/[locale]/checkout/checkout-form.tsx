@@ -38,7 +38,7 @@ export function CheckoutForm({
   dict: Dictionary;
   deliveryTetri: number;
 }) {
-  const { items, subtotal, hydrated } = useCart();
+  const { items, subtotal, hydrated, keyOf } = useCart();
   const [state, formAction] = useActionState(startCheckout, undefined);
 
   const delivery = tetriToGel(deliveryTetri);
@@ -74,6 +74,7 @@ export function CheckoutForm({
         value={JSON.stringify(
           items.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId ?? undefined,
             quantity: item.quantity,
           })),
         )}
@@ -149,7 +150,7 @@ export function CheckoutForm({
 
         <ul className="space-y-3 border-b border-tan/60 pb-4">
           {items.map((item) => (
-            <li key={item.productId} className="flex items-center gap-3">
+            <li key={keyOf(item)} className="flex items-center gap-3">
               <div className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg bg-white">
                 {item.image && (
                   <Image
@@ -163,7 +164,10 @@ export function CheckoutForm({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold leading-tight">{item.name}</p>
-                <p className="text-xs text-ink/45">× {item.quantity}</p>
+                <p className="text-xs text-ink/45">
+                  {[item.color, item.size].filter(Boolean).join(" · ")}
+                  {(item.color || item.size) && " · "}× {item.quantity}
+                </p>
               </div>
               <span className="shrink-0 text-sm font-semibold tabular-nums">
                 {formatGel(item.price * item.quantity)} ₾

@@ -6,6 +6,7 @@ import {
   orderItems,
   orders,
   products,
+  productVariants,
   type OrderItemRow,
   type OrderRow,
 } from "@/db/schema";
@@ -32,11 +33,19 @@ export function getDeliveryFeeTetri(): number {
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : DEFAULT_DELIVERY_FEE_TETRI;
 }
 
-export type CartLine = { productId: string; quantity: number };
+export type CartLine = {
+  productId: string;
+  /** Required when the product has variants; ignored when it has none. */
+  variantId?: string | null;
+  quantity: number;
+};
 
 export type PricedLine = {
   productId: string;
+  variantId: string | null;
   name: string;
+  color: string | null;
+  size: string | null;
   unitPriceTetri: number;
   quantity: number;
   totalTetri: number;
@@ -78,23 +87,37 @@ export async function priceCart(
   locale: LocaleId,
 ): Promise<PricedCart> {
   // Merge duplicate lines before validating, or two lines of 15 would each pass
-  // a stock check of 20 while together exceeding it.
-  const wanted = new Map<string, number>();
+  // a stock check of 20 while together exceeding it. Keyed by product+variant —
+  // "Black M" and "Black L" are different stock pools.
+  const wanted = new Map<string, { productId: string; variantId: string | null; quantity: number }>();
   for (const line of lines) {
     const quantity = Math.floor(Number(line.quantity));
     if (!line.productId || !Number.isFinite(quantity) || quantity <= 0) continue;
-    wanted.set(line.productId, (wanted.get(line.productId) ?? 0) + quantity);
+    const variantId = line.variantId || null;
+    const key = `${line.productId}::${variantId ?? ""}`;
+    const existing = wanted.get(key);
+    wanted.set(key, {
+      productId: line.productId,
+      variantId,
+      quantity: (existing?.quantity ?? 0) + quantity,
+    });
   }
   if (wanted.size === 0) throw new CartError("empty", "Your cart is empty");
 
-  const rows = await db
-    .select()
-    .from(products)
-    .where(inArray(products.id, [...wanted.keys()]));
+  const productIds = [...new Set([...wanted.values()].map((w) => w.productId))];
+  const [rows, variantRows] = await Promise.all([
+    db.select().from(products).where(inArray(products.id, productIds)),
+    db
+      .select()
+      .from(productVariants)
+      .where(inArray(productVariants.productId, productIds)),
+  ]);
   const byId = new Map(rows.map((row) => [row.id, row]));
+  const variantById = new Map(variantRows.map((row) => [row.id, row]));
+  const productHasVariants = new Set(variantRows.map((row) => row.productId));
 
   const priced: PricedLine[] = [];
-  for (const [productId, rawQuantity] of wanted) {
+  for (const { productId, variantId, quantity: rawQuantity } of wanted.values()) {
     const row = byId.get(productId);
     if (!row || !row.isActive) {
       throw new CartError("unavailable", "An item in your cart is no longer available");
@@ -105,20 +128,38 @@ export async function priceCart(
       locale,
     );
     const quantity = Math.min(rawQuantity, MAX_QUANTITY_PER_LINE);
-    if (row.stock < quantity) {
+
+    // Variant products MUST name a real variant of that product — a line
+    // without one (stale cart, tampering) can't be priced against a stock pool.
+    const variant = variantId ? variantById.get(variantId) : null;
+    if (productHasVariants.has(productId)) {
+      if (!variant || variant.productId !== productId) {
+        throw new CartError(
+          "unavailable",
+          "An item in your cart is no longer available",
+        );
+      }
+    }
+
+    const stock = variant ? variant.stock : row.stock;
+    if (stock < quantity) {
+      const label = variant
+        ? `${name} (${[variant.colorName, variant.size].filter(Boolean).join(", ")})`
+        : name;
       throw new CartError(
         "out_of_stock",
-        row.stock <= 0
-          ? `"${name}" is sold out`
-          : `Only ${row.stock} left of "${name}"`,
-        name,
-        row.stock,
+        stock <= 0 ? `"${label}" is sold out` : `Only ${stock} left of "${label}"`,
+        label,
+        stock,
       );
     }
 
     priced.push({
       productId,
+      variantId: variant?.id ?? null,
       name,
+      color: variant?.colorName ?? null,
+      size: variant?.size ?? null,
       unitPriceTetri: row.priceTetri,
       quantity,
       totalTetri: row.priceTetri * quantity,
@@ -186,6 +227,9 @@ export async function createPendingOrder(input: {
         id: randomUUID(),
         orderId: id,
         productId: line.productId,
+        variantId: line.variantId,
+        color: line.color,
+        size: line.size,
         name: line.name,
         unitPriceTetri: line.unitPriceTetri,
         quantity: line.quantity,
@@ -316,6 +360,17 @@ export async function settleOrder(
         // GREATEST floors at zero: two customers can pay for the last unit within
         // the same second, and a negative stock column helps nobody. The admin
         // sees both paid orders and reconciles manually.
+        //
+        // Both rows move together: the variant is the real stock pool, and
+        // products.stock stays the sum so catalog badges keep working.
+        if (item.variantId) {
+          await tx
+            .update(productVariants)
+            .set({
+              stock: sql`GREATEST(${productVariants.stock} - ${item.quantity}, 0)`,
+            })
+            .where(eq(productVariants.id, item.variantId));
+        }
         await tx
           .update(products)
           .set({

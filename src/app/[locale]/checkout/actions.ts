@@ -48,6 +48,7 @@ const cartSchema = z
   .array(
     z.object({
       productId: z.string().trim().min(1),
+      variantId: z.string().trim().min(1).optional(),
       quantity: z.number().int().positive(),
     }),
   )
@@ -99,7 +100,13 @@ export async function startCheckout(
       externalOrderId: order.id,
       totalTetri: cart.totalTetri,
       deliveryTetri: cart.deliveryTetri,
-      items: cart.lines,
+      // Variant in the description so the bank-side receipt names the exact item.
+      items: cart.lines.map((line) => ({
+        ...line,
+        name: [line.name, [line.color, line.size].filter(Boolean).join(", ")]
+          .filter(Boolean)
+          .join(" — "),
+      })),
       locale,
       callbackUrl: `${siteUrl}/api/bog/callback`,
       successUrl: statusUrl,

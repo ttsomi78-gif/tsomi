@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { Product } from "@/lib/products";
+import type { Product, ProductVariant } from "@/lib/products";
 
 /**
  * Cart state lives entirely in the browser. `price` here is for rendering the
@@ -18,15 +18,26 @@ import type { Product } from "@/lib/products";
  */
 export type CartItem = {
   productId: string;
+  /** Null for products sold without variants. */
+  variantId: string | null;
   name: string;
+  /** Display-only variant labels, e.g. "Black" / "M". */
+  color: string | null;
+  colorHex: string | null;
+  size: string | null;
   price: number; // GEL
   image: string;
   quantity: number;
-  /** Stock at the time it was added — the checkout re-checks against live stock. */
+  /** Stock of this exact variant (or product) when added — checkout re-checks live. */
   stock: number;
 };
 
-const STORAGE_KEY = "tsomi.cart.v1";
+/** Two cart lines are the same sellable thing iff product AND variant match. */
+function lineKey(item: Pick<CartItem, "productId" | "variantId">): string {
+  return `${item.productId}::${item.variantId ?? ""}`;
+}
+
+const STORAGE_KEY = "tsomi.cart.v2";
 
 type CartContextValue = {
   items: CartItem[];
@@ -35,12 +46,13 @@ type CartContextValue = {
   /** False until localStorage has been read, so SSR and first paint agree. */
   hydrated: boolean;
   isOpen: boolean;
-  add: (product: Product, quantity?: number) => void;
-  remove: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  add: (product: Product, variant?: ProductVariant | null, quantity?: number) => void;
+  remove: (key: string) => void;
+  setQuantity: (key: string, quantity: number) => void;
   clear: () => void;
   openCart: () => void;
   closeCart: () => void;
+  keyOf: (item: Pick<CartItem, "productId" | "variantId">) => string;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -67,7 +79,11 @@ function readStoredCart(): CartItem[] {
       return [
         {
           productId: item.productId,
+          variantId: typeof item.variantId === "string" ? item.variantId : null,
           name: item.name,
+          color: typeof item.color === "string" ? item.color : null,
+          colorHex: typeof item.colorHex === "string" ? item.colorHex : null,
+          size: typeof item.size === "string" ? item.size : null,
           price: Number(item.price) || 0,
           image: typeof item.image === "string" ? item.image : "",
           quantity,
@@ -101,40 +117,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, hydrated]);
 
-  const add = useCallback((product: Product, quantity = 1) => {
-    setItems((current) => {
-      const existing = current.find((item) => item.productId === product.id);
-      const nextQuantity = Math.min(
-        (existing?.quantity ?? 0) + quantity,
-        Math.max(product.stock, 1),
-      );
-      if (existing) {
-        return current.map((item) =>
-          item.productId === product.id ? { ...item, quantity: nextQuantity, stock: product.stock } : item,
+  const add = useCallback(
+    (product: Product, variant: ProductVariant | null = null, quantity = 1) => {
+      const stock = variant ? variant.stock : product.stock;
+      const key = lineKey({ productId: product.id, variantId: variant?.id ?? null });
+
+      setItems((current) => {
+        const existing = current.find((item) => lineKey(item) === key);
+        const nextQuantity = Math.min(
+          (existing?.quantity ?? 0) + quantity,
+          Math.max(stock, 1),
         );
-      }
-      return [
-        ...current,
-        {
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          quantity: nextQuantity,
-          stock: product.stock,
-        },
-      ];
-    });
+        if (existing) {
+          return current.map((item) =>
+            lineKey(item) === key
+              ? { ...item, quantity: nextQuantity, stock }
+              : item,
+          );
+        }
+        return [
+          ...current,
+          {
+            productId: product.id,
+            variantId: variant?.id ?? null,
+            name: product.name,
+            color: variant?.colorName ?? null,
+            colorHex: variant?.colorHex ?? null,
+            size: variant?.size ?? null,
+            price: product.price,
+            image: product.image,
+            quantity: nextQuantity,
+            stock,
+          },
+        ];
+      });
+    },
+    [],
+  );
+
+  const remove = useCallback((key: string) => {
+    setItems((current) => current.filter((item) => lineKey(item) !== key));
   }, []);
 
-  const remove = useCallback((productId: string) => {
-    setItems((current) => current.filter((item) => item.productId !== productId));
-  }, []);
-
-  const setQuantity = useCallback((productId: string, quantity: number) => {
+  const setQuantity = useCallback((key: string, quantity: number) => {
     setItems((current) =>
       current.flatMap((item) => {
-        if (item.productId !== productId) return [item];
+        if (lineKey(item) !== key) return [item];
         const clamped = Math.min(Math.max(quantity, 0), Math.max(item.stock, 1));
         return clamped <= 0 ? [] : [{ ...item, quantity: clamped }];
       }),
@@ -158,6 +186,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clear,
       openCart,
       closeCart,
+      keyOf: lineKey,
     };
   }, [items, hydrated, isOpen, add, remove, setQuantity, clear, openCart, closeCart]);
 

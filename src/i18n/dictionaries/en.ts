@@ -140,6 +140,8 @@ const dictionary: Dictionary = {
   product: {
     soldOut: "Sold out",
     lowStock: "Only {count} left",
+    color: "Color",
+    size: "Size",
   },
   cart: {
     title: "Cart",

@@ -1,17 +1,38 @@
 import "server-only";
-import { asc, count, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "./client";
 import {
   orderItems,
   orders,
   products,
+  productVariants,
   type OrderStatus,
   type ProductRow,
+  type ProductVariantRow,
 } from "./schema";
 import { tetriToGel } from "@/lib/money";
-import { resolveLocalized, type LocaleId, type Product } from "@/lib/products";
+import {
+  resolveLocalized,
+  type LocaleId,
+  type Product,
+  type ProductVariant,
+} from "@/lib/products";
 
-function toProduct(row: ProductRow, locale: LocaleId = "en"): Product {
+function toVariant(row: ProductVariantRow): ProductVariant {
+  return {
+    id: row.id,
+    colorName: row.colorName,
+    colorHex: row.colorHex,
+    size: row.size,
+    stock: row.stock,
+  };
+}
+
+function toProduct(
+  row: ProductRow,
+  locale: LocaleId = "en",
+  variants: ProductVariant[] = [],
+): Product {
   const tag = resolveLocalized(
     { en: row.tagEn, ru: row.tagRu, ka: row.tagKa, ja: row.tagJa },
     locale,
@@ -33,7 +54,27 @@ function toProduct(row: ProductRow, locale: LocaleId = "en"): Product {
     ),
     tag: tag || undefined,
     stock: row.stock,
+    variants,
   };
+}
+
+/** All variant rows for a set of products, grouped by product id. */
+async function variantsByProduct(
+  productIds: string[],
+): Promise<Map<string, ProductVariant[]>> {
+  if (productIds.length === 0) return new Map();
+  const rows = await db
+    .select()
+    .from(productVariants)
+    .where(inArray(productVariants.productId, productIds))
+    .orderBy(asc(productVariants.sortOrder), asc(productVariants.id));
+  const grouped = new Map<string, ProductVariant[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.productId) ?? [];
+    list.push(toVariant(row));
+    grouped.set(row.productId, list);
+  }
+  return grouped;
 }
 
 /** Public catalog + homepage — only active products, in manual display order. */
@@ -43,7 +84,8 @@ export async function getActiveProducts(locale: LocaleId = "en"): Promise<Produc
     .from(products)
     .where(eq(products.isActive, true))
     .orderBy(asc(products.sortOrder), asc(products.createdAt));
-  return rows.map((row) => toProduct(row, locale));
+  const variants = await variantsByProduct(rows.map((row) => row.id));
+  return rows.map((row) => toProduct(row, locale, variants.get(row.id) ?? []));
 }
 
 /** Admin dashboard — every product, active or hidden. */
@@ -54,7 +96,22 @@ export async function getAllProductsForAdmin(): Promise<
     .select()
     .from(products)
     .orderBy(asc(products.sortOrder), asc(products.createdAt));
-  return rows.map((row) => ({ ...toProduct(row), isActive: row.isActive }));
+  const variants = await variantsByProduct(rows.map((row) => row.id));
+  return rows.map((row) => ({
+    ...toProduct(row, "en", variants.get(row.id) ?? []),
+    isActive: row.isActive,
+  }));
+}
+
+/** Variant rows of one product, in display order — for the admin editor. */
+export async function getVariantsForProduct(
+  productId: string,
+): Promise<ProductVariantRow[]> {
+  return db
+    .select()
+    .from(productVariants)
+    .where(eq(productVariants.productId, productId))
+    .orderBy(asc(productVariants.sortOrder), asc(productVariants.id));
 }
 
 /** Admin sidebar + dashboard — cheap counts, no image/copy columns fetched. */

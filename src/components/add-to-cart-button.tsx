@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { VariantPicker } from "@/components/variant-picker";
 import type { Product } from "@/lib/products";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
@@ -16,6 +17,7 @@ export function AddToCartButton({
 }) {
   const { add, openCart } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -25,9 +27,15 @@ export function AddToCartButton({
   }, []);
 
   const soldOut = product.stock <= 0;
+  const hasVariants = product.variants.length > 0;
 
   function handleClick() {
     if (soldOut) return;
+    // With variants the customer has to say which color/size — open the picker.
+    if (hasVariants) {
+      setPickerOpen(true);
+      return;
+    }
     add(product);
     openCart();
     setJustAdded(true);
@@ -42,25 +50,35 @@ export function AddToCartButton({
       : (dict?.cart.add ?? "Add to cart");
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={soldOut}
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-200 active:scale-95 disabled:cursor-not-allowed ${
-        soldOut
-          ? "bg-ink/10 text-ink/40"
-          : justAdded
-            ? "bg-green text-cream shadow-md shadow-green/25"
-            : "bg-ink text-cream shadow-md shadow-ink/15 hover:bg-terracotta hover:shadow-terracotta/25"
-      } ${className}`}
-    >
-      {justAdded && !soldOut ? (
-        <CheckIcon className="h-3.5 w-3.5" />
-      ) : (
-        !soldOut && <BagIcon className="h-3.5 w-3.5" />
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={soldOut}
+        className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-200 active:scale-95 disabled:cursor-not-allowed ${
+          soldOut
+            ? "bg-ink/10 text-ink/40"
+            : justAdded
+              ? "bg-green text-cream shadow-md shadow-green/25"
+              : "bg-ink text-cream shadow-md shadow-ink/15 hover:bg-terracotta hover:shadow-terracotta/25"
+        } ${className}`}
+      >
+        {justAdded && !soldOut ? (
+          <CheckIcon className="h-3.5 w-3.5" />
+        ) : (
+          !soldOut && <BagIcon className="h-3.5 w-3.5" />
+        )}
+        {label}
+      </button>
+      {hasVariants && (
+        <VariantPicker
+          product={product}
+          dict={dict}
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
-      {label}
-    </button>
+    </>
   );
 }
 

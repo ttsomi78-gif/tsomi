@@ -140,6 +140,8 @@ const dictionary: Dictionary = {
   product: {
     soldOut: "გაყიდულია",
     lowStock: "დარჩა მხოლოდ {count}",
+    color: "ფერი",
+    size: "ზომა",
   },
   cart: {
     title: "კალათა",

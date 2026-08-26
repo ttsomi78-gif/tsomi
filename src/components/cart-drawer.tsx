@@ -19,7 +19,8 @@ export function CartDrawer({
   dict: Dictionary;
   deliveryTetri: number;
 }) {
-  const { items, subtotal, isOpen, closeCart, remove, setQuantity } = useCart();
+  const { items, subtotal, isOpen, closeCart, remove, setQuantity, keyOf } =
+    useCart();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -95,7 +96,7 @@ export function CartDrawer({
               <>
                 <ul className="flex-1 divide-y divide-tan/50 overflow-y-auto px-5">
                   {items.map((item) => (
-                    <li key={item.productId} className="flex gap-4 py-4">
+                    <li key={keyOf(item)} className="flex gap-4 py-4">
                       <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-sand">
                         {item.image && (
                           <Image
@@ -115,13 +116,25 @@ export function CartDrawer({
                           </p>
                           <button
                             type="button"
-                            onClick={() => remove(item.productId)}
+                            onClick={() => remove(keyOf(item))}
                             aria-label={`${dict.cart.remove} — ${item.name}`}
                             className="shrink-0 text-ink/35 transition-colors hover:text-terracotta"
                           >
                             <CloseIcon className="h-4 w-4" />
                           </button>
                         </div>
+
+                        {(item.color || item.size) && (
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink/55">
+                            {item.colorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-ink/15"
+                                style={{ backgroundColor: item.colorHex }}
+                              />
+                            )}
+                            {[item.color, item.size].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
 
                         <p className="mt-0.5 text-sm text-ink/50">
                           {formatGel(item.price)} ₾
@@ -132,7 +145,7 @@ export function CartDrawer({
                             <StepperButton
                               label={dict.cart.decrease}
                               onClick={() =>
-                                setQuantity(item.productId, item.quantity - 1)
+                                setQuantity(keyOf(item), item.quantity - 1)
                               }
                             >
                               −
@@ -144,7 +157,7 @@ export function CartDrawer({
                               label={dict.cart.increase}
                               disabled={item.quantity >= item.stock}
                               onClick={() =>
-                                setQuantity(item.productId, item.quantity + 1)
+                                setQuantity(keyOf(item), item.quantity + 1)
                               }
                             >
                               +

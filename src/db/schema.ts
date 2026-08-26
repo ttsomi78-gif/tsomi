@@ -7,6 +7,7 @@ import {
   timestamp,
   jsonb,
   index,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const categoryEnum = pgEnum("category", ["tees", "bags"]);
@@ -49,8 +50,43 @@ export const products = pgTable("products", {
     .defaultNow(),
 });
 
+/**
+ * Optional per-product variants: a color × size grid with its own stock.
+ *
+ * A product with zero variant rows behaves exactly as before — flat
+ * `products.stock`, no picker. Once variants exist, `products.stock` is kept
+ * as the SUM of variant stocks (enforced by the admin save and the payment
+ * settle), so every existing "is it sold out" check keeps working unchanged.
+ */
+export const productVariants = pgTable(
+  "product_variants",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    /** e.g. "Black" — shown as-is in every locale. Null: no color dimension. */
+    colorName: text("color_name"),
+    /** Swatch fill, e.g. "#27211a". */
+    colorHex: text("color_hex"),
+    /** e.g. "M", "XL". Null: one-size (bags). */
+    size: text("size"),
+    stock: integer("stock").notNull().default(0),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [
+    index("product_variants_product_idx").on(table.productId),
+    // NULLS NOT DISTINCT so two "one-size Black" rows can't coexist.
+    unique("product_variants_combo")
+      .on(table.productId, table.colorName, table.size)
+      .nullsNotDistinct(),
+  ],
+);
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
+export type ProductVariantRow = typeof productVariants.$inferSelect;
+export type NewProductVariantRow = typeof productVariants.$inferInsert;
 
 /**
  * `pending` until Bank of Georgia calls back. `expired` is set by the sweep in
@@ -141,6 +177,15 @@ export const orderItems = pgTable(
     unitPriceTetri: integer("unit_price_tetri").notNull(),
     quantity: integer("quantity").notNull(),
     totalTetri: integer("total_tetri").notNull(),
+
+    // Variant snapshot — which exact color/size was bought. `variantId` is the
+    // live pointer used for the stock decrement; color/size survive even if the
+    // variant row is later deleted.
+    variantId: text("variant_id").references(() => productVariants.id, {
+      onDelete: "set null",
+    }),
+    color: text("color"),
+    size: text("size"),
   },
   (table) => [index("order_items_order_idx").on(table.orderId)],
 );

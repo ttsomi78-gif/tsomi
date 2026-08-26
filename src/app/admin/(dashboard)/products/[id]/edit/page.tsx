@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { getProductById } from "@/db/queries";
+import { getProductById, getVariantsForProduct } from "@/db/queries";
 import { tetriToGel } from "@/lib/money";
 import { ProductForm } from "../../product-form";
+import { VariantsEditor } from "../../variants-editor";
 
 export default async function EditProductPage({
   params,
@@ -11,6 +12,7 @@ export default async function EditProductPage({
   const { id } = await params;
   const row = await getProductById(id);
   if (!row) notFound();
+  const variants = await getVariantsForProduct(id);
 
   return (
     <div>
@@ -38,6 +40,15 @@ export default async function EditProductPage({
           tagJa: row.tagJa,
           stock: row.stock,
         }}
+      />
+      <VariantsEditor
+        productId={row.id}
+        initial={variants.map((variant) => ({
+          colorName: variant.colorName,
+          colorHex: variant.colorHex,
+          size: variant.size,
+          stock: variant.stock,
+        }))}
       />
     </div>
   );
