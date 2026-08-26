@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useRef, useState } from "react";
 import Image from "next/image";
 import { createProductWithColors, type ProductFormState } from "./actions";
 import { categories } from "@/lib/products";
@@ -22,40 +21,41 @@ const FIELD_SUFFIX: Record<LocaleTab, string> = {
   ja: "Ja",
 };
 
+type Photo = { key: string; file: File; preview: string };
 type SizeRow = { key: string; size: string; stock: number };
 type ColorBlock = {
   key: string;
   name: string;
   hex: string;
   sizes: SizeRow[];
-  /** Object URLs previewing the files currently in this card's file input. */
-  previews: string[];
-  fileCount: number;
+  photos: Photo[];
 };
 
 let keyCounter = 0;
 const newKey = () => `k-${keyCounter++}`;
 
 const COMMON_SIZES = ["S", "M", "L", "XL"];
+const MAX_PHOTOS_PER_COLOR = 8;
 
 const inputClass =
   "w-full rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm focus:border-ink focus:outline-none";
 
 /**
- * Single-screen product creation: globals (translated name/tag, category,
- * price) on top, then one self-contained block per color — its photos, its
- * sizes, quantity per size. One submit creates everything; the first photo
- * becomes the catalog cover and total stock is the sum of the blocks.
+ * Single-screen product creation. Photos live in React state as File objects
+ * and are appended to the FormData at submit time — never in the DOM's file
+ * inputs, whose contents silently reset when React re-renders a growing list
+ * (the "second color wiped my first color's photo" bug).
  */
 export function NewProductForm() {
-  const [state, formAction] = useActionState<ProductFormState, FormData>(
+  const [state, formAction, isPending] = useActionState<ProductFormState, FormData>(
     createProductWithColors,
     undefined,
   );
   const [activeLocale, setActiveLocale] = useState<LocaleTab>("en");
   const [colors, setColors] = useState<ColorBlock[]>([
-    { key: newKey(), name: "", hex: "#27211a", sizes: [], previews: [], fileCount: 0 },
+    { key: newKey(), name: "", hex: "#27211a", sizes: [], photos: [] },
   ]);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const totalStock = colors.reduce(
     (sum, color) =>
@@ -69,25 +69,49 @@ export function NewProductForm() {
     );
   }
 
-  function patchSize(colorKey: string, sizeKey: string, patch: Partial<SizeRow>) {
+  function addPhotos(colorKey: string, files: File[]) {
+    if (files.length === 0) return;
     setColors((current) =>
-      current.map((color) =>
-        color.key === colorKey
-          ? {
-              ...color,
-              sizes: color.sizes.map((row) =>
-                row.key === sizeKey ? { ...row, ...patch } : row,
-              ),
-            }
-          : color,
-      ),
+      current.map((color) => {
+        if (color.key !== colorKey) return color;
+        const room = MAX_PHOTOS_PER_COLOR - color.photos.length;
+        const additions = files.slice(0, Math.max(room, 0)).map((file) => ({
+          key: newKey(),
+          file,
+          preview: URL.createObjectURL(file),
+        }));
+        return { ...color, photos: [...color.photos, ...additions] };
+      }),
     );
   }
 
+  function removePhoto(colorKey: string, photoKey: string) {
+    setColors((current) =>
+      current.map((color) => {
+        if (color.key !== colorKey) return color;
+        const photo = color.photos.find((p) => p.key === photoKey);
+        if (photo) URL.revokeObjectURL(photo.preview);
+        return { ...color, photos: color.photos.filter((p) => p.key !== photoKey) };
+      }),
+    );
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!form.reportValidity()) return;
+
+    // Text fields come off the form; the photos come off state, keyed by the
+    // color's render index to match the server's photos_{i} contract.
+    const formData = new FormData(form);
+    colors.forEach((color, index) => {
+      color.photos.forEach((photo) => formData.append(`photos_${index}`, photo.file));
+    });
+    startTransition(() => formAction(formData));
+  }
+
   return (
-    <form action={formAction} className="max-w-3xl space-y-8">
-      {/* the color/size grid rides as JSON; the files ride in the per-card
-          file inputs below under photos_{index} */}
+    <form ref={formRef} onSubmit={handleSubmit} className="max-w-3xl space-y-8">
       <input
         type="hidden"
         name="colors"
@@ -99,7 +123,7 @@ export function NewProductForm() {
               size: row.size,
               stock: Number(row.stock) || 0,
             })),
-            photoCount: color.fileCount,
+            photoCount: color.photos.length,
           })),
         )}
       />
@@ -175,8 +199,6 @@ export function NewProductForm() {
                   name={`name${FIELD_SUFFIX[locale.id]}`}
                   type="text"
                   required={locale.required}
-                  // A required field hidden inside an inactive tab can't be
-                  // focused by the browser — jump to its tab so the message shows.
                   onInvalid={() => setActiveLocale(locale.id)}
                   className={inputClass}
                 />
@@ -202,7 +224,7 @@ export function NewProductForm() {
           Colors, photos &amp; sizes
         </h2>
 
-        {colors.map((color, index) => (
+        {colors.map((color) => (
           <div key={color.key} className="rounded-2xl border border-tan/60 p-4">
             <div className="flex flex-wrap items-center gap-3">
               <input
@@ -226,9 +248,10 @@ export function NewProductForm() {
               {colors.length > 1 && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setColors((current) => current.filter((c) => c.key !== color.key))
-                  }
+                  onClick={() => {
+                    color.photos.forEach((photo) => URL.revokeObjectURL(photo.preview));
+                    setColors((current) => current.filter((c) => c.key !== color.key));
+                  }}
                   className="ml-auto text-sm font-semibold text-ink/40 underline decoration-2 underline-offset-4 hover:text-brick"
                 >
                   Remove color
@@ -236,37 +259,59 @@ export function NewProductForm() {
               )}
             </div>
 
-            <div className="mt-3">
+            {/* photo tiles: thumbnails with ✕, plus a dashed add tile */}
+            <div className="mt-4">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
                 Photos of this color
               </span>
-              {color.previews.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2">
-                  {color.previews.map((src) => (
-                    <span
-                      key={src}
-                      className="relative block h-20 w-16 overflow-hidden rounded-lg border border-tan/50 bg-sand"
+              <div className="flex flex-wrap gap-2">
+                {color.photos.map((photo) => (
+                  <span
+                    key={photo.key}
+                    className="group relative block h-24 w-20 overflow-hidden rounded-xl border border-tan/50 bg-sand"
+                  >
+                    <Image
+                      src={photo.preview}
+                      alt=""
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(color.key, photo.key)}
+                      aria-label="Remove photo"
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-[10px] font-bold text-cream opacity-0 transition-opacity group-hover:opacity-100"
                     >
-                      <Image src={src} alt="" fill sizes="64px" className="object-cover" unoptimized />
+                      ✕
+                    </button>
+                  </span>
+                ))}
+                {color.photos.length < MAX_PHOTOS_PER_COLOR && (
+                  <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-tan text-ink/40 transition-colors hover:border-ink hover:text-ink">
+                    <span className="text-xl leading-none">+</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide">
+                      Photo
                     </span>
-                  ))}
-                </div>
-              )}
-              <input
-                type="file"
-                name={`photos_${index}`}
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                multiple
-                onChange={(event) => {
-                  const files = [...(event.target.files ?? [])];
-                  color.previews.forEach((url) => URL.revokeObjectURL(url));
-                  patchColor(color.key, {
-                    previews: files.map((file) => URL.createObjectURL(file)),
-                    fileCount: files.length,
-                  });
-                }}
-                className="block text-sm file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-wide file:text-cream hover:file:bg-terracotta"
-              />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      multiple
+                      className="hidden"
+                      onChange={(event) => {
+                        // Snapshot NOW: FileList is live, and clearing the
+                        // input below empties it before React's async state
+                        // updater would otherwise read it.
+                        const picked = [...(event.target.files ?? [])];
+                        addPhotos(color.key, picked);
+                        // Same file can be re-picked later — clear the input.
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 space-y-2">
@@ -280,8 +325,12 @@ export function NewProductForm() {
                     value={row.size}
                     placeholder="M  (empty = one size)"
                     onChange={(event) =>
-                      patchSize(color.key, row.key, {
-                        size: event.target.value.toUpperCase(),
+                      patchColor(color.key, {
+                        sizes: color.sizes.map((r) =>
+                          r.key === row.key
+                            ? { ...r, size: event.target.value.toUpperCase() }
+                            : r,
+                        ),
                       })
                     }
                     className="w-40 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm uppercase focus:border-ink focus:outline-none"
@@ -292,8 +341,12 @@ export function NewProductForm() {
                     value={row.stock}
                     aria-label={`Quantity for ${row.size || "one size"}`}
                     onChange={(event) =>
-                      patchSize(color.key, row.key, {
-                        stock: Number(event.target.value),
+                      patchColor(color.key, {
+                        sizes: color.sizes.map((r) =>
+                          r.key === row.key
+                            ? { ...r, stock: Number(event.target.value) }
+                            : r,
+                        ),
                       })
                     }
                     className="w-24 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm tabular-nums focus:border-ink focus:outline-none"
@@ -351,14 +404,7 @@ export function NewProductForm() {
           onClick={() =>
             setColors((current) => [
               ...current,
-              {
-                key: newKey(),
-                name: "",
-                hex: "#27211a",
-                sizes: [],
-                previews: [],
-                fileCount: 0,
-              },
+              { key: newKey(), name: "", hex: "#27211a", sizes: [], photos: [] },
             ])
           }
           className="w-full rounded-2xl border-2 border-dashed border-tan px-4 py-4 text-sm font-bold uppercase tracking-wide text-ink/55 transition-colors hover:border-ink hover:text-ink"
@@ -373,27 +419,23 @@ export function NewProductForm() {
           <span className="font-bold text-ink tabular-nums">{totalStock}</span>{" "}
           — counted automatically
         </p>
-        <SubmitButton />
+        <button
+          type="submit"
+          disabled={isPending}
+          className="ml-auto rounded-full bg-yolk px-8 py-3 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isPending ? "Creating…" : "Create product"}
+        </button>
       </div>
 
       {state?.error && (
-        <p role="alert" className="rounded-2xl bg-brick/10 px-4 py-3 text-sm font-semibold text-brick">
+        <p
+          role="alert"
+          className="rounded-2xl bg-brick/10 px-4 py-3 text-sm font-semibold text-brick"
+        >
           {state.error}
         </p>
       )}
     </form>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="ml-auto rounded-full bg-yolk px-8 py-3 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {pending ? "Creating…" : "Create product"}
-    </button>
   );
 }

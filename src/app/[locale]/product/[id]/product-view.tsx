@@ -117,7 +117,9 @@ export function ProductView({
     <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12">
       {/* ── gallery ── */}
       <div>
-        <div className="relative aspect-4/5 w-full overflow-hidden rounded-3xl bg-sand">
+        {/* Capped to the viewport on desktop so the whole shot is visible
+            without scrolling; mobile keeps the natural 4:5 card ratio. */}
+        <div className="relative aspect-4/5 w-full overflow-hidden rounded-3xl bg-sand lg:aspect-auto lg:h-[min(calc(100vh-11rem),46rem)]">
           <Image
             key={activeImage.id}
             src={activeImage.url}
@@ -181,12 +183,8 @@ export function ProductView({
           <div className="mt-7">
             <p className="mb-2.5 text-xs font-bold uppercase tracking-wide text-ink/55">
               {dict.product.color}
-              {colorName && (
-                <span className="ml-2 normal-case tracking-normal text-ink/75">
-                  {colorName}
-                </span>
-              )}
             </p>
+            {/* The swatch IS the label — no color-name text repeated beside it. */}
             <div className="flex flex-wrap gap-2.5">
               {colors.map(({ colorName: name, colorHex }) => {
                 const isSoldOut = colorStock(name) <= 0;
@@ -197,19 +195,20 @@ export function ProductView({
                     type="button"
                     onClick={() => pickColor(name)}
                     aria-label={name}
+                    title={name}
                     aria-pressed={active}
-                    className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-all ${
+                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
                       active
-                        ? "ring-2 ring-ink ring-offset-2 ring-offset-cream"
-                        : "ring-1 ring-ink/15 hover:ring-ink/40"
+                        ? "border-ink"
+                        : "border-transparent hover:border-ink/35"
                     } ${isSoldOut ? "opacity-40" : ""}`}
                   >
                     <span
-                      className="h-8 w-8 rounded-full border border-ink/10"
+                      className="h-9 w-9 rounded-full border border-ink/10"
                       style={{ backgroundColor: colorHex ?? "#d2bd9c" }}
                     />
                     {isSoldOut && (
-                      <span className="absolute h-px w-9 rotate-45 bg-ink/60" />
+                      <span className="absolute h-px w-10 rotate-45 bg-ink/60" />
                     )}
                   </button>
                 );
@@ -220,17 +219,25 @@ export function ProductView({
 
         {showSizeRow && (
           <div className="mt-7">
-            <p className="mb-2.5 text-xs font-bold uppercase tracking-wide text-ink/55">
-              {dict.product.selectSize}
-            </p>
+            <div className="mb-2.5 flex items-baseline justify-between">
+              <p className="text-xs font-bold uppercase tracking-wide text-ink/55">
+                {dict.product.selectSize}
+              </p>
+              {sizeError && (
+                <p className="text-xs font-semibold text-brick" role="alert">
+                  {dict.product.sizeRequired}
+                </p>
+              )}
+            </div>
             <div
-              className={`grid grid-cols-4 gap-2 rounded-2xl transition-shadow sm:grid-cols-5 ${
-                sizeError ? "ring-2 ring-brick ring-offset-4 ring-offset-cream" : ""
+              className={`grid grid-cols-4 gap-1.5 sm:grid-cols-5 ${
+                sizeError ? "rounded-lg ring-1 ring-brick ring-offset-4 ring-offset-cream" : ""
               }`}
             >
               {sizeOptions.map((variant) => {
                 const isSoldOut = variant.stock <= 0;
                 const active = variantId === variant.id;
+                const low = !isSoldOut && variant.stock <= 3;
                 return (
                   <button
                     key={variant.id}
@@ -238,29 +245,34 @@ export function ProductView({
                     onClick={() => pickSize(variant)}
                     disabled={isSoldOut}
                     aria-pressed={active}
-                    className={`rounded-xl border-2 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
+                    className={`relative flex min-h-12 flex-col items-center justify-center rounded-lg border py-2 text-sm font-bold uppercase tracking-wide transition-colors ${
                       active
                         ? "border-ink bg-ink text-cream"
                         : isSoldOut
-                          ? "cursor-not-allowed border-tan/40 text-ink/25 line-through"
-                          : "border-tan/60 text-ink/75 hover:border-ink hover:text-ink"
+                          ? "cursor-not-allowed border-tan/40 bg-sand/40 text-ink/25"
+                          : "border-tan/70 bg-white/60 text-ink/80 hover:border-ink"
                     }`}
                   >
-                    {variant.size ?? "—"}
+                    <span className={isSoldOut ? "line-through" : ""}>
+                      {variant.size ?? "—"}
+                    </span>
+                    {/* Every low size wears its own count, not just the selected one. */}
+                    {low && (
+                      <span
+                        className={`mt-0.5 text-[9px] font-semibold normal-case tracking-normal ${
+                          active ? "text-cream/80" : "text-gold"
+                        }`}
+                      >
+                        {dict.product.lowStock.replace(
+                          "{count}",
+                          String(variant.stock),
+                        )}
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
-            {sizeError && (
-              <p className="mt-2 text-sm font-semibold text-brick" role="alert">
-                {dict.product.sizeRequired}
-              </p>
-            )}
-            {selected && selected.stock > 0 && selected.stock <= 3 && (
-              <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
-                {dict.product.lowStock.replace("{count}", String(selected.stock))}
-              </p>
-            )}
           </div>
         )}
 
