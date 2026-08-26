@@ -142,6 +142,8 @@ const dictionary: Dictionary = {
     lowStock: "Осталось {count} шт.",
     color: "Цвет",
     size: "Размер",
+    selectSize: "Выберите размер",
+    sizeRequired: "Пожалуйста, выберите размер",
   },
   cart: {
     title: "Корзина",

@@ -142,6 +142,8 @@ const dictionary: Dictionary = {
     lowStock: "残り{count}点",
     color: "カラー",
     size: "サイズ",
+    selectSize: "サイズを選択",
+    sizeRequired: "サイズを選択してください",
   },
   cart: {
     title: "カート",

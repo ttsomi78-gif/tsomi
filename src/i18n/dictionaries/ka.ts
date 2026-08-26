@@ -142,6 +142,8 @@ const dictionary: Dictionary = {
     lowStock: "დარჩა მხოლოდ {count}",
     color: "ფერი",
     size: "ზომა",
+    selectSize: "აირჩიე ზომა",
+    sizeRequired: "გთხოვთ, აირჩიოთ ზომა",
   },
   cart: {
     title: "კალათა",

@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
-import { getProductById, getVariantsForProduct } from "@/db/queries";
+import {
+  getImagesForProduct,
+  getProductById,
+  getVariantsForProduct,
+} from "@/db/queries";
 import { tetriToGel } from "@/lib/money";
 import { ProductForm } from "../../product-form";
 import { VariantsEditor } from "../../variants-editor";
+import { ImagesEditor } from "../../images-editor";
 
 export default async function EditProductPage({
   params,
@@ -12,7 +17,17 @@ export default async function EditProductPage({
   const { id } = await params;
   const row = await getProductById(id);
   if (!row) notFound();
-  const variants = await getVariantsForProduct(id);
+  const [variants, images] = await Promise.all([
+    getVariantsForProduct(id),
+    getImagesForProduct(id),
+  ]);
+  const colorNames = [
+    ...new Set(
+      variants
+        .map((variant) => variant.colorName)
+        .filter((name): name is string => !!name),
+    ),
+  ];
 
   return (
     <div>
@@ -49,6 +64,15 @@ export default async function EditProductPage({
           size: variant.size,
           stock: variant.stock,
         }))}
+      />
+      <ImagesEditor
+        productId={row.id}
+        images={images.map((image) => ({
+          id: image.id,
+          url: image.url,
+          colorName: image.colorName,
+        }))}
+        colorNames={colorNames}
       />
     </div>
   );

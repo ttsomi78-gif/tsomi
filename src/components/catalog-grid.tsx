@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons";
-import { categories, type CategoryId, type Product } from "@/lib/products";
+import {
+  categories,
+  type CategoryId,
+  type LocaleId,
+  type Product,
+} from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
@@ -11,9 +16,11 @@ type SortId = "featured" | "price-asc" | "price-desc" | "name";
 
 export function CatalogGrid({
   products,
+  locale,
   dict,
 }: {
   products: Product[];
+  locale: LocaleId;
   dict: Dictionary;
 }) {
   const [active, setActive] = useState<Filter>("all");
@@ -133,7 +140,12 @@ export function CatalogGrid({
       {filtered.length > 0 ? (
         <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} dict={dict} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              locale={locale}
+              dict={dict}
+            />
           ))}
         </div>
       ) : (

@@ -35,7 +35,7 @@ function structuredData(products: Product[], locale: LocaleId) {
         "@type": "Product",
         name: product.name,
         image: `${siteUrl}${product.image}`,
-        url: `${siteUrl}/${locale}/catalog`,
+        url: `${siteUrl}/${locale}/product/${product.id}`,
         brand: { "@type": "Brand", name: "TSOMI" },
         offers: {
           "@type": "Offer",
@@ -100,7 +100,7 @@ export default async function CatalogPage({
         </div>
 
         <section className="mx-auto max-w-330 px-4 pb-20 pt-6 sm:px-6">
-          <CatalogGrid products={products} dict={dict} />
+          <CatalogGrid products={products} locale={locale} dict={dict} />
         </section>
       </main>
       <Footer locale={locale} dict={dict} />

@@ -48,7 +48,7 @@ export async function Products({ locale, dict }: { locale: LocaleId; dict: Dicti
                 key={product.id}
                 className="basis-[72%] py-4 sm:basis-1/2 sm:py-8 lg:basis-1/4"
               >
-                <ProductCard product={product} dict={dict} />
+                <ProductCard product={product} locale={locale} dict={dict} />
               </CarouselItem>
             ))}
           </CarouselContent>

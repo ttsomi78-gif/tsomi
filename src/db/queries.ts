@@ -5,8 +5,10 @@ import {
   orderItems,
   orders,
   products,
+  productImages,
   productVariants,
   type OrderStatus,
+  type ProductImageRow,
   type ProductRow,
   type ProductVariantRow,
 } from "./schema";
@@ -15,6 +17,7 @@ import {
   resolveLocalized,
   type LocaleId,
   type Product,
+  type ProductImage,
   type ProductVariant,
 } from "@/lib/products";
 
@@ -28,10 +31,15 @@ function toVariant(row: ProductVariantRow): ProductVariant {
   };
 }
 
+function toImage(row: ProductImageRow): ProductImage {
+  return { id: row.id, url: row.url, colorName: row.colorName };
+}
+
 function toProduct(
   row: ProductRow,
   locale: LocaleId = "en",
   variants: ProductVariant[] = [],
+  images: ProductImage[] = [],
 ): Product {
   const tag = resolveLocalized(
     { en: row.tagEn, ru: row.tagRu, ka: row.tagKa, ja: row.tagJa },
@@ -55,6 +63,7 @@ function toProduct(
     tag: tag || undefined,
     stock: row.stock,
     variants,
+    images,
   };
 }
 
@@ -77,6 +86,25 @@ async function variantsByProduct(
   return grouped;
 }
 
+/** All gallery images for a set of products, grouped by product id. */
+async function imagesByProduct(
+  productIds: string[],
+): Promise<Map<string, ProductImage[]>> {
+  if (productIds.length === 0) return new Map();
+  const rows = await db
+    .select()
+    .from(productImages)
+    .where(inArray(productImages.productId, productIds))
+    .orderBy(asc(productImages.sortOrder), asc(productImages.id));
+  const grouped = new Map<string, ProductImage[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.productId) ?? [];
+    list.push(toImage(row));
+    grouped.set(row.productId, list);
+  }
+  return grouped;
+}
+
 /** Public catalog + homepage — only active products, in manual display order. */
 export async function getActiveProducts(locale: LocaleId = "en"): Promise<Product[]> {
   const rows = await db
@@ -86,6 +114,35 @@ export async function getActiveProducts(locale: LocaleId = "en"): Promise<Produc
     .orderBy(asc(products.sortOrder), asc(products.createdAt));
   const variants = await variantsByProduct(rows.map((row) => row.id));
   return rows.map((row) => toProduct(row, locale, variants.get(row.id) ?? []));
+}
+
+/** One active product with variants and gallery — the product page. */
+export async function getActiveProductById(
+  id: string,
+  locale: LocaleId = "en",
+): Promise<Product | null> {
+  const [row] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+  if (!row || !row.isActive) return null;
+  const [variants, images] = await Promise.all([
+    variantsByProduct([id]),
+    imagesByProduct([id]),
+  ]);
+  return toProduct(row, locale, variants.get(id) ?? [], images.get(id) ?? []);
+}
+
+/** Gallery rows of one product, in display order — for the admin editor. */
+export async function getImagesForProduct(
+  productId: string,
+): Promise<ProductImageRow[]> {
+  return db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, productId))
+    .orderBy(asc(productImages.sortOrder), asc(productImages.id));
 }
 
 /** Admin dashboard — every product, active or hidden. */

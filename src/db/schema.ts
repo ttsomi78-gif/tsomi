@@ -83,10 +83,31 @@ export const productVariants = pgTable(
   ],
 );
 
+/**
+ * Gallery images for the product page. `colorName` scopes an image to one
+ * color (matching `productVariants.colorName`); null means it shows for every
+ * color. The catalog card keeps using `products.imageUrl` as its cover.
+ */
+export const productImages = pgTable(
+  "product_images",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    colorName: text("color_name"),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [index("product_images_product_idx").on(table.productId)],
+);
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
 export type ProductVariantRow = typeof productVariants.$inferSelect;
 export type NewProductVariantRow = typeof productVariants.$inferInsert;
+export type ProductImageRow = typeof productImages.$inferSelect;
+export type NewProductImageRow = typeof productImages.$inferInsert;
 
 /**
  * `pending` until Bank of Georgia calls back. `expired` is set by the sweep in

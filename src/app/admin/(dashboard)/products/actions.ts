@@ -2,11 +2,11 @@
 
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
-import { products, productVariants } from "@/db/schema";
+import { products, productImages, productVariants } from "@/db/schema";
 import { getProductById } from "@/db/queries";
 import { requireAdminSession } from "@/lib/session";
 import { uploadProductImage, deleteProductImageByUrl } from "@/lib/storage";
@@ -285,6 +285,134 @@ export async function saveVariants(
 
   revalidatePublicPages();
   return { saved: true };
+}
+
+export type ImagesFormState = { error?: string; saved?: boolean } | undefined;
+
+const MAX_GALLERY_UPLOADS = 8;
+
+/**
+ * Adds gallery images to a product, all assigned to one color (or to "all
+ * colors" when colorName is empty). Multiple files per call.
+ */
+export async function addProductImages(
+  productId: string,
+  _prevState: ImagesFormState,
+  formData: FormData,
+): Promise<ImagesFormState> {
+  await requireAdminSession();
+
+  const existing = await getProductById(productId);
+  if (!existing) return { error: "Product not found" };
+
+  const colorName = String(formData.get("colorName") ?? "").trim() || null;
+  const files = formData
+    .getAll("images")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+
+  if (files.length === 0) return { error: "Choose at least one image" };
+  if (files.length > MAX_GALLERY_UPLOADS) {
+    return { error: `At most ${MAX_GALLERY_UPLOADS} images per upload` };
+  }
+
+  const current = await db
+    .select({ sortOrder: productImages.sortOrder })
+    .from(productImages)
+    .where(eq(productImages.productId, productId));
+  let nextOrder =
+    current.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
+
+  // Upload sequentially and remember what landed, so a failure mid-batch can
+  // report cleanly while the already-inserted images simply remain.
+  for (const file of files) {
+    let url: string;
+    try {
+      url = await uploadProductImage(file);
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "Image upload failed",
+      };
+    }
+    await db.insert(productImages).values({
+      id: randomUUID(),
+      productId,
+      url,
+      colorName,
+      sortOrder: nextOrder++,
+    });
+  }
+
+  revalidatePublicPages();
+  revalidatePath(`/admin/products/${productId}/edit`);
+  return { saved: true };
+}
+
+export async function deleteProductImage(productId: string, imageId: string) {
+  await requireAdminSession();
+
+  const [row] = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.id, imageId))
+    .limit(1);
+  if (!row || row.productId !== productId) return;
+
+  await db.delete(productImages).where(eq(productImages.id, imageId));
+  await deleteProductImageByUrl(row.url);
+
+  revalidatePublicPages();
+  revalidatePath(`/admin/products/${productId}/edit`);
+}
+
+/** Reassigns one gallery image to a different color (empty = all colors). */
+export async function setProductImageColor(
+  productId: string,
+  imageId: string,
+  colorName: string,
+) {
+  await requireAdminSession();
+
+  await db
+    .update(productImages)
+    .set({ colorName: colorName.trim() || null })
+    .where(eq(productImages.id, imageId));
+
+  revalidatePublicPages();
+  revalidatePath(`/admin/products/${productId}/edit`);
+}
+
+/** Swaps a gallery image with its neighbour — first image is the lead shot. */
+export async function moveProductImage(
+  productId: string,
+  imageId: string,
+  direction: "up" | "down",
+) {
+  await requireAdminSession();
+
+  const rows = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, productId))
+    .orderBy(asc(productImages.sortOrder), asc(productImages.id));
+
+  const index = rows.findIndex((row) => row.id === imageId);
+  const neighbour = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || neighbour < 0 || neighbour >= rows.length) return;
+
+  // Renumber the whole list — repairs any duplicate sortOrders while swapping.
+  const reordered = [...rows];
+  [reordered[index], reordered[neighbour]] = [reordered[neighbour], reordered[index]];
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < reordered.length; i++) {
+      await tx
+        .update(productImages)
+        .set({ sortOrder: i })
+        .where(eq(productImages.id, reordered[i].id));
+    }
+  });
+
+  revalidatePublicPages();
+  revalidatePath(`/admin/products/${productId}/edit`);
 }
 
 export async function toggleActive(formData: FormData) {

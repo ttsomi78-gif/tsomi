@@ -82,6 +82,8 @@ export interface Dictionary {
     lowStock: string;
     color: string;
     size: string;
+    selectSize: string;
+    sizeRequired: string;
   };
   cart: {
     title: string;

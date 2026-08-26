@@ -23,6 +23,14 @@ export function resolveLocalized(value: LocalizedText, locale: LocaleId = "en"):
   return value[locale]?.trim() || value.en?.trim() || "";
 }
 
+/** A gallery image, optionally scoped to one color. */
+export type ProductImage = {
+  id: string;
+  url: string;
+  /** Null: shown for every color. */
+  colorName: string | null;
+};
+
 /** One sellable combination — a color and/or size with its own stock. */
 export type ProductVariant = {
   id: string;
@@ -50,7 +58,25 @@ export type Product = {
   stock: number;
   /** Empty array = no variants: flat stock, no picker. */
   variants: ProductVariant[];
+  /** Gallery for the product page; empty = fall back to `image`. */
+  images: ProductImage[];
 };
+
+/**
+ * Gallery for one selected color: that color's images first, then the
+ * all-color ones, then the cover as a last resort. Never returns empty.
+ */
+export function imagesForColor(
+  product: Pick<Product, "image" | "images">,
+  colorName: string | null,
+): { id: string; url: string }[] {
+  const scoped = product.images.filter(
+    (image) => image.colorName !== null && image.colorName === colorName,
+  );
+  const general = product.images.filter((image) => image.colorName === null);
+  const list = [...scoped, ...general];
+  return list.length > 0 ? list : [{ id: "cover", url: product.image }];
+}
 
 /** Distinct colors of a product's variants, in display order. */
 export function productColors(
