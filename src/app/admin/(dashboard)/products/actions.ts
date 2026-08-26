@@ -113,7 +113,9 @@ export async function createProduct(
   }
 
   revalidatePublicPages();
-  redirect("/admin/products");
+  // Straight to the edit screen: colors, photos and per-size quantities are
+  // set there, and that's the immediate next step for every new product.
+  redirect(`/admin/products/${id}/edit`);
 }
 
 export async function updateProduct(

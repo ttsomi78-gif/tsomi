@@ -73,7 +73,7 @@ export function ProductForm({
       className="max-w-2xl space-y-10"
     >
       <section className="space-y-5">
-        <SectionHeading title="Basics" description="Category, price and inventory — shown the same in every language." />
+        <SectionHeading title="Basics" description="Category and price — shown the same in every language." />
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Category">
@@ -103,36 +103,44 @@ export function ProductForm({
             />
           </Field>
 
-          <Field
-            label={
-              stockManagedByColors
-                ? "Stock — set per color & size below"
-                : "Stock (units available)"
-            }
-          >
-            {/* Disabled inputs don't submit, so the real value rides in a
-                hidden field while the visible one is display-only. The server
-                ignores it anyway once variants exist — this is belt and braces. */}
-            {stockManagedByColors && (
-              <input type="hidden" name="stock" value={product?.stock ?? 0} />
-            )}
-            <input
-              name={stockManagedByColors ? undefined : "stock"}
-              type="number"
-              step="1"
-              min="0"
-              defaultValue={product?.stock ?? 0}
-              required={!stockManagedByColors}
-              disabled={stockManagedByColors}
-              title={
-                stockManagedByColors
-                  ? "This product has colors/sizes — the total is the sum of their quantities"
-                  : undefined
-              }
-              className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
-            />
-          </Field>
+          {/* Stock is never typed on creation — a new product starts at 0 and
+              gets its inventory in the per-color editor right after. On edit,
+              the flat field exists only for products without colors, and locks
+              itself the moment colors own the stock. */}
+          {product === undefined ? (
+            <input type="hidden" name="stock" value={0} />
+          ) : stockManagedByColors ? (
+            <Field label="Stock — managed per color & size below">
+              <input type="hidden" name="stock" value={product.stock} />
+              <input
+                type="number"
+                defaultValue={product.stock}
+                disabled
+                title="This product has colors — the total is the sum of the quantities below"
+                className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
+              />
+            </Field>
+          ) : (
+            <Field label="Stock (no colors yet — or add them below)">
+              <input
+                name="stock"
+                type="number"
+                step="1"
+                min="0"
+                defaultValue={product.stock}
+                required
+                className={inputClass}
+              />
+            </Field>
+          )}
         </div>
+
+        {product === undefined && (
+          <p className="rounded-xl bg-sand/60 px-4 py-3 text-sm text-ink/60">
+            Photos per color, sizes and quantities are set on the next screen —
+            create the product first and you&apos;ll land there.
+          </p>
+        )}
       </section>
 
       <section className="space-y-5">
