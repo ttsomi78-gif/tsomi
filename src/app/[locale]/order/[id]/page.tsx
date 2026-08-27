@@ -7,6 +7,7 @@ import { OrderEffects } from "./order-effects";
 import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
 import { getOrderById, getOrderItems, reconcileOrder } from "@/lib/orders";
 import { formatGel, tetriToGel } from "@/lib/money";
+import { colorLabel } from "@/lib/colors";
 import type { OrderStatus } from "@/db/schema";
 import type { LocaleId } from "@/lib/products";
 
@@ -131,7 +132,9 @@ export default async function OrderPage({
                   {(item.color || item.size) && (
                     <span className="text-ink/55">
                       {" "}
-                      ({[item.color, item.size].filter(Boolean).join(", ")})
+                      ({[colorLabel(item.color, locale), item.size]
+                        .filter(Boolean)
+                        .join(", ")})
                     </span>
                   )}
                   <span className="text-ink/45"> × {item.quantity}</span>

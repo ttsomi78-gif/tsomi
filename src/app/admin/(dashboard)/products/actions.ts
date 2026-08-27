@@ -13,6 +13,7 @@ import { uploadProductImage, deleteProductImageByUrl } from "@/lib/storage";
 import { gelToTetri } from "@/lib/money";
 import { slugify } from "@/lib/slug";
 import { locales } from "@/lib/products";
+import { paletteColor } from "@/lib/colors";
 
 const optionalText = z
   .string()
@@ -63,12 +64,15 @@ function fileOrNull(value: FormDataEntryValue | null): File | null {
   return value instanceof File && value.size > 0 ? value : null;
 }
 
+/** Only palette IDs are accepted — the admin picks from a dropdown. */
+const paletteColorId = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((value) => paletteColor(value) !== null, "Pick a color from the list");
+
 const newColorSchema = z.object({
-  colorName: z.string().trim().min(1).max(40),
-  colorHex: z
-    .string()
-    .trim()
-    .regex(/^#[0-9a-fA-F]{6}$/),
+  colorName: paletteColorId,
   sizes: z
     .array(
       z.object({
@@ -209,7 +213,7 @@ export async function createProductWithColors(
             id: randomUUID(),
             productId: id,
             colorName: color.colorName,
-            colorHex: color.colorHex,
+            colorHex: paletteColor(color.colorName)?.hex ?? null,
             size: row.size,
             stock: row.stock,
             sortOrder: variantOrder++,
@@ -338,11 +342,7 @@ async function syncProductStock(
 }
 
 const colorSaveSchema = z.object({
-  colorName: z.string().trim().min(1).max(40),
-  colorHex: z
-    .string()
-    .trim()
-    .regex(/^#[0-9a-fA-F]{6}$/),
+  colorName: paletteColorId,
   sizes: z
     .array(
       z.object({
@@ -420,7 +420,7 @@ export async function saveColor(
           id: randomUUID(),
           productId,
           colorName: parsed.colorName,
-          colorHex: parsed.colorHex,
+          colorHex: paletteColor(parsed.colorName)?.hex ?? null,
           size: row.size,
           stock: row.stock,
           sortOrder: order++,

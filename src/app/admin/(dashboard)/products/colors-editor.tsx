@@ -12,6 +12,7 @@ import {
   type ColorFormState,
   type ImagesFormState,
 } from "./actions";
+import { COLOR_PALETTE, colorHexOf, paletteColor } from "@/lib/colors";
 
 type GalleryImage = { id: string; url: string; colorName: string | null };
 type SizeRow = { key: string; size: string; stock: number };
@@ -43,22 +44,26 @@ export function ColorsEditor({
   sharedImages: GalleryImage[];
 }) {
   const [drafts, setDrafts] = useState<ColorBlock[]>([]);
-  const [newName, setNewName] = useState("");
-  const [newHex, setNewHex] = useState("#27211a");
+  const [newColorId, setNewColorId] = useState("");
 
   const existingNames = new Set(colors.map((color) => color.colorName));
   const blocks = [...colors, ...drafts.filter((d) => !existingNames.has(d.colorName))];
+  const takenIds = new Set(blocks.map((block) => block.colorName));
 
   function addDraft() {
-    const name = newName.trim();
-    if (!name) return;
-    if (blocks.some((block) => block.colorName.toLowerCase() === name.toLowerCase()))
-      return;
+    const picked = paletteColor(newColorId);
+    if (!picked || takenIds.has(picked.id)) return;
     setDrafts((current) => [
       ...current,
-      { colorName: name, colorHex: newHex, sizes: [], images: [], draft: true },
+      {
+        colorName: picked.id,
+        colorHex: picked.hex,
+        sizes: [],
+        images: [],
+        draft: true,
+      },
     ]);
-    setNewName("");
+    setNewColorId("");
   }
 
   return (
@@ -75,37 +80,37 @@ export function ColorsEditor({
       <div className="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-tan/60 bg-sand/40 p-4">
         <label className="block">
           <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
-            New color name
+            Color
           </span>
-          <input
-            type="text"
-            value={newName}
-            placeholder="Black"
-            onChange={(event) => setNewName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                addDraft();
-              }
-            }}
-            className="w-40 rounded-lg border border-tan/60 bg-cream px-3 py-2 focus:border-ink focus:outline-none"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
-            Swatch
-          </span>
-          <input
-            type="color"
-            value={newHex}
-            onChange={(event) => setNewHex(event.target.value)}
-            className="h-10 w-14 cursor-pointer rounded-lg border border-tan/60 bg-cream p-1"
-          />
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+              style={{ backgroundColor: paletteColor(newColorId)?.hex ?? "#eaddc6" }}
+            />
+            <select
+              value={newColorId}
+              onChange={(event) => setNewColorId(event.target.value)}
+              className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
+            >
+              <option value="">Choose color…</option>
+              {COLOR_PALETTE.map((option) => (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  disabled={takenIds.has(option.id)}
+                >
+                  {option.labels.en}
+                </option>
+              ))}
+            </select>
+          </div>
         </label>
         <button
           type="button"
           onClick={addDraft}
-          className="rounded-full bg-ink px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-cream transition-colors hover:bg-terracotta"
+          disabled={!paletteColor(newColorId)}
+          className="rounded-full bg-ink px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-cream transition-colors hover:bg-terracotta disabled:cursor-not-allowed disabled:opacity-40"
         >
           + Add color
         </button>
@@ -147,12 +152,13 @@ function ColorCard({
       stock: row.stock,
     })),
   );
-  const [hex, setHex] = useState(block.colorHex);
-  const [name, setName] = useState(block.colorName);
+  const [colorId, setColorId] = useState(block.colorName);
   const [state, formAction] = useActionState<ColorFormState, FormData>(
     saveColor.bind(null, productId, block.draft ? null : block.colorName),
     undefined,
   );
+  /** Rows saved before the palette existed hold free text ("Black"). */
+  const isLegacy = paletteColor(block.colorName) === null;
 
   const total = rows.reduce((sum, row) => sum + (Number(row.stock) || 0), 0);
 
@@ -179,20 +185,30 @@ function ColorCard({
   return (
     <div className="rounded-2xl border border-tan/60 p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="color"
-          value={hex}
-          aria-label={`Swatch for ${name}`}
-          onChange={(event) => setHex(event.target.value)}
-          className="h-10 w-12 cursor-pointer rounded-lg border border-tan/60 bg-cream p-1"
+        <span
+          aria-hidden="true"
+          className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+          style={{ backgroundColor: colorHexOf(colorId, block.colorHex) }}
         />
-        <input
-          type="text"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          aria-label="Color name"
-          className="w-40 rounded-lg border border-tan/60 bg-cream px-3 py-2 font-bold focus:border-ink focus:outline-none"
-        />
+        <select
+          value={colorId}
+          onChange={(event) => setColorId(event.target.value)}
+          aria-label="Color"
+          className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
+        >
+          {/* Pre-palette rows keep their raw name selectable so the card
+              renders; picking a real color and saving migrates the rows. */}
+          {isLegacy && (
+            <option value={block.colorName}>
+              {block.colorName} (old — pick a color)
+            </option>
+          )}
+          {COLOR_PALETTE.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.labels.en}
+            </option>
+          ))}
+        </select>
         <span className="text-sm text-ink/50">
           {total} in stock
           {block.draft && (
@@ -231,8 +247,7 @@ function ColorCard({
           type="hidden"
           name="color"
           value={JSON.stringify({
-            colorName: name,
-            colorHex: hex,
+            colorName: colorId,
             sizes: rows.map((row) => ({
               size: row.size,
               stock: Number(row.stock) || 0,

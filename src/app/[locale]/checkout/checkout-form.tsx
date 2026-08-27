@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { formatGel, tetriToGel } from "@/lib/money";
+import { colorLabel } from "@/lib/colors";
 import { startCheckout, type CheckoutError } from "./actions";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
@@ -165,7 +166,9 @@ export function CheckoutForm({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold leading-tight">{item.name}</p>
                 <p className="text-xs text-ink/45">
-                  {[item.color, item.size].filter(Boolean).join(" · ")}
+                  {[colorLabel(item.color, locale), item.size]
+                    .filter(Boolean)
+                    .join(" · ")}
                   {(item.color || item.size) && " · "}× {item.quantity}
                 </p>
               </div>

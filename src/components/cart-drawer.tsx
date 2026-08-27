@@ -7,6 +7,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/components/cart-provider";
 import { formatGel, tetriToGel } from "@/lib/money";
+import { colorHexOf, colorLabel } from "@/lib/colors";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
@@ -129,10 +130,14 @@ export function CartDrawer({
                             {item.colorHex && (
                               <span
                                 className="h-3 w-3 rounded-full border border-ink/15"
-                                style={{ backgroundColor: item.colorHex }}
+                                style={{
+                                  backgroundColor: colorHexOf(item.color, item.colorHex),
+                                }}
                               />
                             )}
-                            {[item.color, item.size].filter(Boolean).join(" · ")}
+                            {[colorLabel(item.color, locale), item.size]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </p>
                         )}
 

@@ -11,6 +11,7 @@ import {
   type CartLine,
 } from "@/lib/orders";
 import { getSiteUrl } from "@/lib/site";
+import { colorLabel } from "@/lib/colors";
 import { isLocale } from "@/i18n/config";
 import type { LocaleId } from "@/lib/products";
 
@@ -100,10 +101,14 @@ export async function startCheckout(
       externalOrderId: order.id,
       totalTetri: cart.totalTetri,
       deliveryTetri: cart.deliveryTetri,
-      // Variant in the description so the bank-side receipt names the exact item.
+      // Variant in the description so the bank-side receipt names the exact
+      // item — English label, since the receipt is a business document.
       items: cart.lines.map((line) => ({
         ...line,
-        name: [line.name, [line.color, line.size].filter(Boolean).join(", ")]
+        name: [
+          line.name,
+          [colorLabel(line.color, "en"), line.size].filter(Boolean).join(", "),
+        ]
           .filter(Boolean)
           .join(" — "),
       })),

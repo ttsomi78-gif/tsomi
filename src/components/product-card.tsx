@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { categories, productColors, type Product } from "@/lib/products";
+import { colorHexOf, colorLabel } from "@/lib/colors";
 import { formatGel } from "@/lib/money";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
@@ -162,9 +163,9 @@ export function ProductCard({
                     {colors.map(({ colorName, colorHex }) => (
                       <span
                         key={colorName}
-                        title={colorName}
+                        title={colorLabel(colorName, locale)}
                         className="h-4 w-4 rounded-full border border-ink/15 shadow-sm"
-                        style={{ backgroundColor: colorHex ?? "#d2bd9c" }}
+                        style={{ backgroundColor: colorHexOf(colorName, colorHex) }}
                       />
                     ))}
                   </span>

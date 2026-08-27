@@ -4,6 +4,7 @@ import { startTransition, useActionState, useRef, useState } from "react";
 import Image from "next/image";
 import { createProductWithColors, type ProductFormState } from "./actions";
 import { categories } from "@/lib/products";
+import { COLOR_PALETTE, paletteColor } from "@/lib/colors";
 
 const LOCALES = [
   { id: "en", label: "English", required: true },
@@ -25,8 +26,8 @@ type Photo = { key: string; file: File; preview: string };
 type SizeRow = { key: string; size: string; stock: number };
 type ColorBlock = {
   key: string;
-  name: string;
-  hex: string;
+  /** Palette ID from COLOR_PALETTE — empty until the admin picks one. */
+  colorId: string;
   sizes: SizeRow[];
   photos: Photo[];
 };
@@ -53,7 +54,7 @@ export function NewProductForm() {
   );
   const [activeLocale, setActiveLocale] = useState<LocaleTab>("en");
   const [colors, setColors] = useState<ColorBlock[]>([
-    { key: newKey(), name: "", hex: "#27211a", sizes: [], photos: [] },
+    { key: newKey(), colorId: "", sizes: [], photos: [] },
   ]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -117,8 +118,7 @@ export function NewProductForm() {
         name="colors"
         value={JSON.stringify(
           colors.map((color) => ({
-            colorName: color.name,
-            colorHex: color.hex,
+            colorName: color.colorId,
             sizes: color.sizes.map((row) => ({
               size: row.size,
               stock: Number(row.stock) || 0,
@@ -227,21 +227,38 @@ export function NewProductForm() {
         {colors.map((color) => (
           <div key={color.key} className="rounded-2xl border border-tan/60 p-4">
             <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="color"
-                value={color.hex}
-                aria-label="Swatch color"
-                onChange={(event) => patchColor(color.key, { hex: event.target.value })}
-                className="h-10 w-12 cursor-pointer rounded-lg border border-tan/60 bg-cream p-1"
+              {/* Swatch preview follows the dropdown — the palette owns the hex. */}
+              <span
+                aria-hidden="true"
+                className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+                style={{
+                  backgroundColor: paletteColor(color.colorId)?.hex ?? "#eaddc6",
+                }}
               />
-              <input
-                type="text"
-                value={color.name}
-                placeholder="Color name — Black"
-                aria-label="Color name"
-                onChange={(event) => patchColor(color.key, { name: event.target.value })}
+              <select
+                value={color.colorId}
+                aria-label="Color"
+                onChange={(event) =>
+                  patchColor(color.key, { colorId: event.target.value })
+                }
+                required
                 className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
-              />
+              >
+                <option value="" disabled>
+                  Choose color…
+                </option>
+                {COLOR_PALETTE.map((option) => (
+                  <option
+                    key={option.id}
+                    value={option.id}
+                    disabled={colors.some(
+                      (c) => c.key !== color.key && c.colorId === option.id,
+                    )}
+                  >
+                    {option.labels.en}
+                  </option>
+                ))}
+              </select>
               <span className="text-sm text-ink/50">
                 {color.sizes.reduce((s, row) => s + (Number(row.stock) || 0), 0)} pcs
               </span>
@@ -404,7 +421,7 @@ export function NewProductForm() {
           onClick={() =>
             setColors((current) => [
               ...current,
-              { key: newKey(), name: "", hex: "#27211a", sizes: [], photos: [] },
+              { key: newKey(), colorId: "", sizes: [], photos: [] },
             ])
           }
           className="w-full rounded-2xl border-2 border-dashed border-tan px-4 py-4 text-sm font-bold uppercase tracking-wide text-ink/55 transition-colors hover:border-ink hover:text-ink"

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatGel, tetriToGel } from "@/lib/money";
+import { colorLabel } from "@/lib/colors";
 import { getOrderWithItems } from "@/db/queries";
 import type { OrderStatus } from "@/db/schema";
 
@@ -112,7 +113,9 @@ export default async function AdminOrderDetailPage({
                   <span className="font-semibold">{item.name}</span>
                   {(item.color || item.size) && (
                     <span className="ml-1.5 rounded-full bg-sand px-2 py-0.5 text-xs font-semibold text-ink/70">
-                      {[item.color, item.size].filter(Boolean).join(" / ")}
+                      {[colorLabel(item.color, "en"), item.size]
+                        .filter(Boolean)
+                        .join(" / ")}
                     </span>
                   )}
                   {item.productId ? (

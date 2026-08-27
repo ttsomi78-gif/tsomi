@@ -11,6 +11,7 @@ import {
   type Product,
   type ProductVariant,
 } from "@/lib/products";
+import { colorHexOf, colorLabel } from "@/lib/colors";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
@@ -172,46 +173,35 @@ export function ProductView({
               >
                 <ChevronIcon className="h-4 w-4" />
               </button>
-              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {/* Thumbnails live ON the image, bottom-centre — they double as
+                  the position indicator, so there are no separate dots. */}
+              <div className="absolute bottom-3 left-1/2 flex max-w-[90%] -translate-x-1/2 gap-1.5 overflow-x-auto rounded-xl bg-cream/70 p-1.5 backdrop-blur-sm">
                 {gallery.map((image, index) => (
-                  <span
+                  <button
                     key={image.id}
-                    className={`h-1.5 rounded-full transition-all ${
-                      index === imageIndex ? "w-5 bg-ink" : "w-1.5 bg-ink/30"
+                    type="button"
+                    onClick={() => setImageIndex(index)}
+                    aria-label={`Image ${index + 1}`}
+                    aria-current={index === imageIndex}
+                    className={`relative h-12 w-9 shrink-0 overflow-hidden rounded-lg bg-sand transition-all ${
+                      index === imageIndex
+                        ? "ring-2 ring-ink"
+                        : "opacity-70 hover:opacity-100"
                     }`}
-                  />
+                  >
+                    <Image
+                      src={image.url}
+                      alt=""
+                      fill
+                      sizes="36px"
+                      className="object-cover"
+                    />
+                  </button>
                 ))}
               </div>
             </>
           )}
         </div>
-
-        {gallery.length > 1 && (
-          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
-            {gallery.map((image, index) => (
-              <button
-                key={image.id}
-                type="button"
-                onClick={() => setImageIndex(index)}
-                aria-label={`Image ${index + 1}`}
-                aria-current={index === imageIndex}
-                className={`relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-sand transition-all ${
-                  index === imageIndex
-                    ? "ring-2 ring-ink"
-                    : "opacity-60 ring-1 ring-ink/10 hover:opacity-100"
-                }`}
-              >
-                <Image
-                  src={image.url}
-                  alt=""
-                  fill
-                  sizes="44px"
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* ── info / selection ── */}
@@ -239,13 +229,14 @@ export function ProductView({
               {colors.map(({ colorName: name, colorHex }) => {
                 const isSoldOut = colorStock(name) <= 0;
                 const active = colorName === name;
+                const label = colorLabel(name, locale);
                 return (
                   <button
                     key={name}
                     type="button"
                     onClick={() => pickColor(name)}
-                    aria-label={name}
-                    title={name}
+                    aria-label={label}
+                    title={label}
                     aria-pressed={active}
                     className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
                       active
@@ -255,7 +246,7 @@ export function ProductView({
                   >
                     <span
                       className="h-9 w-9 rounded-full border border-ink/10"
-                      style={{ backgroundColor: colorHex ?? "#d2bd9c" }}
+                      style={{ backgroundColor: colorHexOf(name, colorHex) }}
                     />
                     {isSoldOut && (
                       <span className="absolute h-px w-10 rotate-45 bg-ink/60" />
