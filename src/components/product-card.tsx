@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -30,6 +31,24 @@ export function ProductCard({
   const lowStock = !soldOut && product.stock <= LOW_STOCK_THRESHOLD;
   const categoryLabel = categories.find((c) => c.id === product.category)?.label;
   const colors = productColors(product.variants);
+
+  // Cover first, then the gallery (all colors), deduped — the card flips
+  // through them with the arrows without leaving the catalog.
+  const gallery = [
+    product.image,
+    ...product.images.map((image) => image.url),
+  ].filter((url, index, list) => list.indexOf(url) === index);
+  const [imageIndex, setImageIndex] = useState(0);
+  const shownImage = gallery[Math.min(imageIndex, gallery.length - 1)];
+
+  function stepImage(event: React.MouseEvent, direction: 1 | -1) {
+    // The whole card is a link — flipping a photo must not navigate.
+    event.preventDefault();
+    event.stopPropagation();
+    setImageIndex(
+      (current) => (current + direction + gallery.length) % gallery.length,
+    );
+  }
   /** Distinct sizes that are actually in stock, in variant order. */
   const sizesInStock = [
     ...new Set(
@@ -74,13 +93,15 @@ export function ProductCard({
             )}
           </div>
           <Image
-            src={product.image}
+            key={shownImage}
+            src={shownImage}
             alt={product.alt}
             fill
             sizes={productImageSizes}
             className={`object-cover transition-transform duration-500 group-hover:scale-[1.04] ${soldOut ? "opacity-60 grayscale" : ""}`}
           />
-          {product.hoverImage && (
+          {/* The hover crossfade only makes sense without a carousel. */}
+          {gallery.length === 1 && product.hoverImage && (
             <Image
               src={product.hoverImage}
               alt=""
@@ -90,6 +111,37 @@ export function ProductCard({
             />
           )}
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(event) => stepImage(event, -1)}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-cream/85 text-ink shadow-md backdrop-blur-sm transition-all hover:bg-cream sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100"
+              >
+                <ChevronIcon className="h-3.5 w-3.5 rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => stepImage(event, 1)}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-cream/85 text-ink shadow-md backdrop-blur-sm transition-all hover:bg-cream sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100"
+              >
+                <ChevronIcon className="h-3.5 w-3.5" />
+              </button>
+              <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1">
+                {gallery.map((url, index) => (
+                  <span
+                    key={url}
+                    className={`h-1 rounded-full transition-all ${
+                      index === imageIndex ? "w-4 bg-cream" : "w-1 bg-cream/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-3 border-t border-ink/[0.06] bg-white px-5 py-4">
@@ -136,6 +188,23 @@ export function ProductCard({
         </div>
       </Link>
     </motion.article>
+  );
+}
+
+function ChevronIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m9 5 7 7-7 7" />
+    </svg>
   );
 }
 

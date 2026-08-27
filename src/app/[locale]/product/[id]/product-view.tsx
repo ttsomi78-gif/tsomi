@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
@@ -56,9 +56,16 @@ export function ProductView({
   const [imageIndex, setImageIndex] = useState(0);
   const [sizeError, setSizeError] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   const gallery = imagesForColor(product, colorName);
   const activeImage = gallery[Math.min(imageIndex, gallery.length - 1)];
+
+  function stepImage(direction: 1 | -1) {
+    setImageIndex(
+      (current) => (current + direction + gallery.length) % gallery.length,
+    );
+  }
 
   const sizeOptions = product.variants.filter(
     (variant) => !hasColors || variant.colorName === colorName,
@@ -118,8 +125,20 @@ export function ProductView({
       {/* ── gallery ── */}
       <div>
         {/* Capped to the viewport on desktop so the whole shot is visible
-            without scrolling; mobile keeps the natural 4:5 card ratio. */}
-        <div className="relative aspect-4/5 w-full overflow-hidden rounded-3xl bg-sand lg:aspect-auto lg:h-[min(calc(100vh-11rem),46rem)]">
+            without scrolling; mobile keeps the natural 4:5 card ratio.
+            Arrows + swipe cycle through the selected color's photos. */}
+        <div
+          className="group/gallery relative aspect-4/5 w-full overflow-hidden rounded-3xl bg-sand lg:aspect-auto lg:h-[min(calc(100vh-11rem),46rem)]"
+          onTouchStart={(event) => {
+            touchStartX.current = event.touches[0].clientX;
+          }}
+          onTouchEnd={(event) => {
+            if (touchStartX.current === null || gallery.length < 2) return;
+            const delta = event.changedTouches[0].clientX - touchStartX.current;
+            touchStartX.current = null;
+            if (Math.abs(delta) > 40) stepImage(delta < 0 ? 1 : -1);
+          }}
+        >
           <Image
             key={activeImage.id}
             src={activeImage.url}
@@ -134,10 +153,41 @@ export function ProductView({
               {dict.product.soldOut}
             </span>
           )}
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => stepImage(-1)}
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-cream/85 text-ink shadow-md backdrop-blur-sm transition-all hover:bg-cream lg:opacity-0 lg:group-hover/gallery:opacity-100"
+              >
+                <ChevronIcon className="h-4 w-4 rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={() => stepImage(1)}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-cream/85 text-ink shadow-md backdrop-blur-sm transition-all hover:bg-cream lg:opacity-0 lg:group-hover/gallery:opacity-100"
+              >
+                <ChevronIcon className="h-4 w-4" />
+              </button>
+              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {gallery.map((image, index) => (
+                  <span
+                    key={image.id}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === imageIndex ? "w-5 bg-ink" : "w-1.5 bg-ink/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {gallery.length > 1 && (
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
             {gallery.map((image, index) => (
               <button
                 key={image.id}
@@ -145,17 +195,17 @@ export function ProductView({
                 onClick={() => setImageIndex(index)}
                 aria-label={`Image ${index + 1}`}
                 aria-current={index === imageIndex}
-                className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl bg-sand transition-all ${
+                className={`relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-sand transition-all ${
                   index === imageIndex
                     ? "ring-2 ring-ink"
-                    : "opacity-70 ring-1 ring-ink/10 hover:opacity-100"
+                    : "opacity-60 ring-1 ring-ink/10 hover:opacity-100"
                 }`}
               >
                 <Image
                   src={image.url}
                   alt=""
                   fill
-                  sizes="64px"
+                  sizes="44px"
                   className="object-cover"
                 />
               </button>
@@ -306,5 +356,22 @@ export function ProductView({
         </div>
       </div>
     </div>
+  );
+}
+
+function ChevronIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m9 5 7 7-7 7" />
+    </svg>
   );
 }

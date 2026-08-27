@@ -112,8 +112,15 @@ export async function getActiveProducts(locale: LocaleId = "en"): Promise<Produc
     .from(products)
     .where(eq(products.isActive, true))
     .orderBy(asc(products.sortOrder), asc(products.createdAt));
-  const variants = await variantsByProduct(rows.map((row) => row.id));
-  return rows.map((row) => toProduct(row, locale, variants.get(row.id) ?? []));
+  const ids = rows.map((row) => row.id);
+  // Gallery rides along so the catalog card can be a mini-carousel.
+  const [variants, images] = await Promise.all([
+    variantsByProduct(ids),
+    imagesByProduct(ids),
+  ]);
+  return rows.map((row) =>
+    toProduct(row, locale, variants.get(row.id) ?? [], images.get(row.id) ?? []),
+  );
 }
 
 /** One active product with variants and gallery — the product page. */
