@@ -154,12 +154,14 @@ export default async function OrderPage({
                 {formatGel(tetriToGel(order.itemsTetri))} ₾
               </dd>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-ink/55">{dict.order.delivery}</dt>
-              <dd className="font-semibold tabular-nums">
-                {formatGel(tetriToGel(order.deliveryTetri))} ₾
-              </dd>
-            </div>
+            {order.deliveryTetri > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-ink/55">{dict.order.delivery}</dt>
+                <dd className="font-semibold tabular-nums">
+                  {formatGel(tetriToGel(order.deliveryTetri))} ₾
+                </dd>
+              </div>
+            )}
             <div className="flex justify-between border-t border-tan/60 pt-2 text-base">
               <dt className="font-bold">{dict.order.total}</dt>
               <dd className="font-display text-xl text-terracotta tabular-nums">

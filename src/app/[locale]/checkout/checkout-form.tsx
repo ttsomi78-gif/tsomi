@@ -138,9 +138,11 @@ export function CheckoutForm({
               className="w-full rounded-2xl border-2 border-tan/60 bg-white/60 px-4 py-3 text-sm outline-none transition-colors placeholder:text-ink/30 focus:border-ink"
             />
           </label>
-          <p className="text-sm text-ink/45">
-            {dict.checkout.deliveryNote.replace("{amount}", formatGel(delivery))}
-          </p>
+          {delivery > 0 && (
+            <p className="text-sm text-ink/45">
+              {dict.checkout.deliveryNote.replace("{amount}", formatGel(delivery))}
+            </p>
+          )}
         </fieldset>
       </div>
 
@@ -184,10 +186,12 @@ export function CheckoutForm({
             <dt className="text-ink/55">{dict.cart.subtotal}</dt>
             <dd className="font-semibold tabular-nums">{formatGel(subtotal)} ₾</dd>
           </div>
-          <div className="flex justify-between">
-            <dt className="text-ink/55">{dict.cart.delivery}</dt>
-            <dd className="font-semibold tabular-nums">{formatGel(delivery)} ₾</dd>
-          </div>
+          {delivery > 0 && (
+            <div className="flex justify-between">
+              <dt className="text-ink/55">{dict.cart.delivery}</dt>
+              <dd className="font-semibold tabular-nums">{formatGel(delivery)} ₾</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t border-tan/60 pt-2 text-base">
             <dt className="font-bold">{dict.cart.total}</dt>
             <dd className="font-display text-xl text-terracotta tabular-nums">

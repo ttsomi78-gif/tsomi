@@ -18,7 +18,7 @@ export async function generateMetadata({
   return buildPageMetadata("shipping", locale, "/shipping");
 }
 
-const content = (fee: string): Record<LocaleId, LegalContent> => ({
+const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => ({
   en: {
     title: "Delivery & Returns",
     intro: "Simple rules, no small print.",
@@ -27,7 +27,9 @@ const content = (fee: string): Record<LocaleId, LegalContent> => ({
       {
         heading: "Delivery",
         body: [
-          `We deliver across Georgia. The flat delivery fee is ${fee} ₾, added once per order at checkout.`,
+          free
+            ? "We deliver across Georgia — delivery is free."
+            : `We deliver across Georgia. The flat delivery fee is ${fee} ₾, added once per order at checkout.`,
           `Orders are handed to the courier within 1–2 business days and typically arrive in ${company.deliveryDays} business days.`,
           "We'll contact you by phone to confirm the delivery time.",
         ],
@@ -56,7 +58,9 @@ const content = (fee: string): Record<LocaleId, LegalContent> => ({
       {
         heading: "მიწოდება",
         body: [
-          `მიწოდება მოქმედებს მთელ საქართველოში. მიწოდების ფასია ${fee} ₾ — ერთხელ ემატება შეკვეთას გადახდისას.`,
+          free
+            ? "მიწოდება მოქმედებს მთელ საქართველოში — მიწოდება უფასოა."
+            : `მიწოდება მოქმედებს მთელ საქართველოში. მიწოდების ფასია ${fee} ₾ — ერთხელ ემატება შეკვეთას გადახდისას.`,
           `შეკვეთას კურიერს გადავცემთ 1–2 სამუშაო დღეში; ჩაბარებას ჩვეულებრივ ${company.deliveryDays} სამუშაო დღე სჭირდება.`,
           "მიწოდების დროის დასაზუსტებლად ტელეფონით დაგიკავშირდებით.",
         ],
@@ -85,7 +89,9 @@ const content = (fee: string): Record<LocaleId, LegalContent> => ({
       {
         heading: "Доставка",
         body: [
-          `Доставляем по всей Грузии. Стоимость доставки — ${fee} ₾, добавляется один раз к заказу при оформлении.`,
+          free
+            ? "Доставляем по всей Грузии — доставка бесплатная."
+            : `Доставляем по всей Грузии. Стоимость доставки — ${fee} ₾, добавляется один раз к заказу при оформлении.`,
           `Передаём заказ курьеру в течение 1–2 рабочих дней; доставка обычно занимает ${company.deliveryDays} рабочих дней.`,
           "Мы позвоним вам, чтобы согласовать время доставки.",
         ],
@@ -114,7 +120,9 @@ const content = (fee: string): Record<LocaleId, LegalContent> => ({
       {
         heading: "配送",
         body: [
-          `ジョージア全土に配送します。配送料は一律${fee} ₾で、ご注文時に一度だけ加算されます。`,
+          free
+            ? "ジョージア全土に配送します。配送料は無料です。"
+            : `ジョージア全土に配送します。配送料は一律${fee} ₾で、ご注文時に一度だけ加算されます。`,
           `ご注文は1〜2営業日以内に配送業者へ引き渡され、通常${company.deliveryDays}営業日でお届けします。`,
           "お届け時間の確認のため、お電話でご連絡いたします。",
         ],
@@ -144,6 +152,13 @@ export default async function ShippingPage({
 }) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
-  const fee = formatGel(tetriToGel(getDeliveryFeeTetri()));
-  return <LegalPage locale={locale} dict={dict} content={content(fee)[locale]} />;
+  const feeTetri = getDeliveryFeeTetri();
+  const fee = formatGel(tetriToGel(feeTetri));
+  return (
+    <LegalPage
+      locale={locale}
+      dict={dict}
+      content={content(fee, feeTetri === 0)[locale]}
+    />
+  );
 }

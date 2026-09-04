@@ -208,35 +208,12 @@ export function ProductForm({
         ))}
       </section>
 
-      <section className="space-y-5">
-        <SectionHeading title="Photos" description="JPG or PNG. The hover photo is optional." />
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label={product ? "Replace photo (optional)" : "Photo"}>
-            <input
-              name="image"
-              type="file"
-              accept="image/*"
-              required={!product}
-              className={inputClass}
-            />
-            {product && (
-              <p className="mt-1.5 text-xs text-ink/50">
-                Leave empty to keep the current photo.
-              </p>
-            )}
-          </Field>
-
-          <Field label="Hover photo (optional)">
-            <input
-              name="hoverImage"
-              type="file"
-              accept="image/*"
-              className={inputClass}
-            />
-          </Field>
-        </div>
-      </section>
+      {/* No photo fields here on purpose: photos live in the color cards
+          below, and the catalog cover is automatically the first photo. */}
+      <p className="rounded-xl bg-sand/60 px-4 py-3 text-sm text-ink/60">
+        Photos are managed per color below. The first photo automatically
+        becomes the catalog cover.
+      </p>
 
       {state?.error && (
         <p className="text-sm font-semibold text-brick">{state.error}</p>

@@ -337,7 +337,7 @@ export function ProductView({
         </button>
 
         <div className="mt-6 space-y-1.5 border-t border-tan/60 pt-5 text-sm text-ink/55">
-          <p>{deliveryNote}</p>
+          {deliveryNote && <p>{deliveryNote}</p>}
           <Link
             href={`/${locale}/shipping`}
             className="inline-block font-semibold text-ink/70 underline decoration-2 underline-offset-4 transition-colors hover:text-terracotta"

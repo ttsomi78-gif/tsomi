@@ -191,12 +191,14 @@ export function CartDrawer({
                         {formatGel(subtotal)} ₾
                       </dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-ink/55">{dict.cart.delivery}</dt>
-                      <dd className="font-semibold tabular-nums">
-                        {formatGel(delivery)} ₾
-                      </dd>
-                    </div>
+                    {delivery > 0 && (
+                      <div className="flex justify-between">
+                        <dt className="text-ink/55">{dict.cart.delivery}</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {formatGel(delivery)} ₾
+                        </dd>
+                      </div>
+                    )}
                     <div className="flex justify-between border-t border-tan/60 pt-2 text-base">
                       <dt className="font-bold">{dict.cart.total}</dt>
                       <dd className="font-display text-xl text-terracotta tabular-nums">

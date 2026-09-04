@@ -350,34 +350,47 @@ function UploadForm({
     undefined,
   );
   return (
-    <form action={formAction} className="mt-2 flex flex-wrap items-center gap-3">
+    /* Picking files submits immediately — there is no separate upload button
+       to forget, which is exactly how photos used to get "lost". */
+    <form action={formAction} className="mt-2">
       <input type="hidden" name="colorName" value={colorName} />
-      <input
-        type="file"
-        name="images"
-        accept="image/jpeg,image/png,image/webp,image/avif"
-        multiple
-        required
-        className="block text-sm file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-wide file:text-cream hover:file:bg-terracotta"
-      />
-      <UploadPhotosButton />
+      <UploadTile />
       {state?.error && (
-        <p className="w-full text-sm font-semibold text-brick">{state.error}</p>
+        <p className="mt-2 text-sm font-semibold text-brick">{state.error}</p>
+      )}
+      {state?.saved && !state.error && (
+        <p className="mt-2 text-sm font-semibold text-green">Photos uploaded</p>
       )}
     </form>
   );
 }
 
-function UploadPhotosButton() {
+function UploadTile() {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-full border-2 border-ink px-5 py-1.5 text-xs font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-cream disabled:cursor-not-allowed disabled:opacity-50"
+    <label
+      className={`flex h-24 w-20 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-ink/40 transition-colors ${
+        pending
+          ? "cursor-wait border-gold text-gold"
+          : "cursor-pointer border-tan hover:border-ink hover:text-ink"
+      }`}
     >
-      {pending ? "Uploading…" : "Upload photos"}
-    </button>
+      <span className="text-xl leading-none">{pending ? "…" : "+"}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wide">
+        {pending ? "Uploading" : "Photo"}
+      </span>
+      <input
+        type="file"
+        name="images"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        multiple
+        disabled={pending}
+        className="hidden"
+        onChange={(event) => {
+          if (event.target.files?.length) event.target.form?.requestSubmit();
+        }}
+      />
+    </label>
   );
 }
 

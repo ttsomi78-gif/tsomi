@@ -60,10 +60,6 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-function fileOrNull(value: FormDataEntryValue | null): File | null {
-  return value instanceof File && value.size > 0 ? value : null;
-}
-
 /** Only palette IDs are accepted — the admin picks from a dropdown. */
 const paletteColorId = z
   .string()
@@ -260,14 +256,6 @@ export async function updateProduct(
   const existing = await getProductById(id);
   if (!existing) return { error: "Product not found" };
 
-  const imageFile = fileOrNull(formData.get("image"));
-  const hoverFile = fileOrNull(formData.get("hoverImage"));
-
-  const imageUrl = imageFile ? await uploadProductImage(imageFile) : existing.imageUrl;
-  const hoverImageUrl = hoverFile
-    ? await uploadProductImage(hoverFile)
-    : existing.hoverImageUrl;
-
   const {
     nameEn, nameRu, nameKa, nameJa,
     category, price,
@@ -292,17 +280,12 @@ export async function updateProduct(
       nameEn, nameRu: nameRu ?? null, nameKa: nameKa ?? null, nameJa: nameJa ?? null,
       category,
       priceTetri: gelToTetri(price),
-      imageUrl,
-      hoverImageUrl,
       altEn, altRu: altRu ?? null, altKa: altKa ?? null, altJa: altJa ?? null,
       tagEn: tagEn ?? null, tagRu: tagRu ?? null, tagKa: tagKa ?? null, tagJa: tagJa ?? null,
       ...(hasVariants ? {} : { stock }),
       updatedAt: new Date(),
     })
     .where(eq(products.id, id));
-
-  if (imageFile) await deleteProductImageByUrl(existing.imageUrl);
-  if (hoverFile) await deleteProductImageByUrl(existing.hoverImageUrl);
 
   revalidatePublicPages();
   redirect("/admin/products");
@@ -312,14 +295,45 @@ export async function deleteProduct(id: string) {
   await requireAdminSession();
 
   const existing = await getProductById(id);
+  // Gallery files first, while their rows still exist — the cascade delete
+  // below wipes the rows and would leave the files orphaned on disk (that's
+  // exactly where the stray files in /app/uploads came from).
+  const gallery = await db
+    .select({ url: productImages.url })
+    .from(productImages)
+    .where(eq(productImages.productId, id));
+
   await db.delete(products).where(eq(products.id, id));
 
+  for (const row of gallery) {
+    await deleteProductImageByUrl(row.url);
+  }
   if (existing) {
     await deleteProductImageByUrl(existing.imageUrl);
     await deleteProductImageByUrl(existing.hoverImageUrl);
   }
 
   revalidatePublicPages();
+}
+
+/**
+ * Keeps the catalog cover honest: products.imageUrl is always the gallery's
+ * first photo. Runs after every gallery mutation, so "what's first in the
+ * color cards" and "what the catalog shows" can't drift apart.
+ */
+async function syncCoverFromGallery(productId: string) {
+  const [first] = await db
+    .select({ url: productImages.url })
+    .from(productImages)
+    .where(eq(productImages.productId, productId))
+    .orderBy(asc(productImages.sortOrder), asc(productImages.id))
+    .limit(1);
+  if (!first) return; // no gallery — leave whatever cover exists
+
+  await db
+    .update(products)
+    .set({ imageUrl: first.url, updatedAt: new Date() })
+    .where(eq(products.id, productId));
 }
 
 /** Re-derives products.stock as the variant sum. Call inside the transaction. */
@@ -538,6 +552,7 @@ export async function addProductImages(
     });
   }
 
+  await syncCoverFromGallery(productId);
   revalidatePublicPages();
   revalidatePath(`/admin/products/${productId}/edit`);
   return { saved: true };
@@ -555,6 +570,7 @@ export async function deleteProductImage(productId: string, imageId: string) {
 
   await db.delete(productImages).where(eq(productImages.id, imageId));
   await deleteProductImageByUrl(row.url);
+  await syncCoverFromGallery(productId);
 
   revalidatePublicPages();
   revalidatePath(`/admin/products/${productId}/edit`);
@@ -606,6 +622,7 @@ export async function moveProductImage(
         .where(eq(productImages.id, reordered[i].id));
     }
   });
+  await syncCoverFromGallery(productId);
 
   revalidatePublicPages();
   revalidatePath(`/admin/products/${productId}/edit`);

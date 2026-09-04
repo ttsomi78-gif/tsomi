@@ -84,10 +84,12 @@ export default async function ProductPage({
   ]);
   if (!product) notFound();
 
-  const deliveryNote = dict.checkout.deliveryNote.replace(
-    "{amount}",
-    formatGel(tetriToGel(getDeliveryFeeTetri())),
-  );
+  const feeTetri = getDeliveryFeeTetri();
+  // Free delivery: no note at all beats "0 ₾ delivery".
+  const deliveryNote =
+    feeTetri > 0
+      ? dict.checkout.deliveryNote.replace("{amount}", formatGel(tetriToGel(feeTetri)))
+      : "";
 
   return (
     <>
