@@ -15,7 +15,8 @@ import type { LocaleId } from "@/lib/products";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Order — TSOMI",
+  // Bare name — the root layout's title template appends the brand.
+  title: "Order",
   robots: { index: false, follow: false },
 };
 
