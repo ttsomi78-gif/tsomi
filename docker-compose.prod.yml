@@ -41,6 +41,13 @@ services:
     build:
       context: .
     restart: unless-stopped
+    # Explicit resolvers: Docker's default chain (embedded DNS → the host's
+    # systemd-resolved stub) intermittently returns EAI_AGAIN under musl's
+    # parallel lookups, which killed live BOG payments with "fetch failed".
+    # Pointing the embedded DNS straight at public resolvers ends that.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     # Bound to loopback, not 0.0.0.0: the only public way in is Caddy on 443.
     # Keeping the port lets you curl it over an SSH tunnel when debugging.
     ports:
@@ -66,6 +73,11 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    # Same DNS hardening — a certificate renewal must not fail on a flaky
+    # resolver chain.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     ports:
       - "80:80"
       - "443:443"
