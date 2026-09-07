@@ -27,7 +27,7 @@ export const pageMeta: Record<string, Record<LocaleId, PageMeta>> = {
         "Khinkali tees and khachapuri shopper bags, designed and made in Georgia. TSOMI (ცომი) means dough — we wear it daily. Delivery across Georgia.",
     },
     ka: {
-      title: "TSOMI — ცომი · ქართული სტრიტვეარი ცომისგან",
+      title: "TSOMI — ცომი · ქართული სტრითვეარი ცომისგან",
       description:
         "ხინკლის მაისურები და ხაჭაპურის შოპერები — შექმნილი და დამზადებული საქართველოში. TSOMI ნიშნავს ცომს. მიწოდება მთელ საქართველოში.",
     },
@@ -51,7 +51,7 @@ export const pageMeta: Record<string, Record<LocaleId, PageMeta>> = {
     ka: {
       title: "კატალოგი",
       description:
-        "TSOMI-ს სრული კოლექცია — ხინკლის მაისურები, ხაჭაპურის შოპერები და სხვა ქართული სტრიტვეარი. ფასები ლარში, მიწოდება მთელ საქართველოში.",
+        "TSOMI-ს სრული კოლექცია — ხინკლის მაისურები, ხაჭაპურის შოპერები და სხვა ქართული სტრითვეარი. ფასები ლარში, მიწოდება მთელ საქართველოში.",
     },
     ru: {
       title: "Каталог",

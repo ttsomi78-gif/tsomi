@@ -88,44 +88,30 @@ export default async function OrderPage({
     <>
       <Header locale={locale} dict={dict} />
       <OrderEffects status={order.status} />
-      <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="rounded-3xl border-2 border-tan/60 bg-white/70 p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <span
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${styles.icon}`}
-            >
-              {tone === "success" ? (
-                <CheckIcon className="h-6 w-6" />
-              ) : tone === "danger" ? (
-                <CrossIcon className="h-6 w-6" />
-              ) : (
-                <ClockIcon className="h-6 w-6" />
-              )}
-            </span>
-            <div>
-              <h1 className="font-display text-2xl uppercase tracking-wide sm:text-3xl">
-                {heading}
-              </h1>
-              <p className="mt-1 text-ink/55">{text}</p>
-            </div>
-          </div>
+      <main className="mx-auto max-w-xl px-4 py-12 sm:px-6 sm:py-16">
+        {/* Centered status header — the customer needs the outcome, not a
+            technical dossier. Raw failure reasons and the UUID live in the
+            admin panel, not here. */}
+        <div className="flex flex-col items-center text-center">
+          <span
+            className={`flex h-16 w-16 items-center justify-center rounded-full shadow-md ${styles.icon}`}
+          >
+            {tone === "success" ? (
+              <CheckIcon className="h-8 w-8" />
+            ) : tone === "danger" ? (
+              <CrossIcon className="h-8 w-8" />
+            ) : (
+              <ClockIcon className="h-8 w-8" />
+            )}
+          </span>
+          <h1 className="mt-5 font-display text-3xl uppercase tracking-wide sm:text-4xl">
+            {heading}
+          </h1>
+          <p className="mt-2 max-w-md text-ink/55">{text}</p>
+        </div>
 
-          {order.failureReason && tone !== "success" && (
-            <p
-              className={`mt-5 rounded-2xl px-4 py-3 text-sm font-medium ${styles.badge}`}
-            >
-              {order.failureReason}
-            </p>
-          )}
-
-          <dl className="mt-6 border-t border-tan/60 pt-5 text-sm">
-            <div className="flex flex-wrap justify-between gap-2">
-              <dt className="text-ink/50">{dict.order.reference}</dt>
-              <dd className="font-mono text-xs text-ink/70">{order.id}</dd>
-            </div>
-          </dl>
-
-          <ul className="mt-5 space-y-2 border-t border-tan/60 pt-5">
+        <div className="mt-8 rounded-3xl border-2 border-tan/60 bg-white/70 p-6 sm:p-7">
+          <ul className="space-y-2">
             {items.map((item) => (
               <li key={item.id} className="flex items-baseline justify-between gap-3 text-sm">
                 <span className="min-w-0">
@@ -148,12 +134,15 @@ export default async function OrderPage({
           </ul>
 
           <dl className="mt-4 space-y-1.5 border-t border-tan/60 pt-4 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-ink/55">{dict.order.items}</dt>
-              <dd className="font-semibold tabular-nums">
-                {formatGel(tetriToGel(order.itemsTetri))} ₾
-              </dd>
-            </div>
+            {/* With free delivery the items line just repeats the total. */}
+            {order.deliveryTetri > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-ink/55">{dict.order.items}</dt>
+                <dd className="font-semibold tabular-nums">
+                  {formatGel(tetriToGel(order.itemsTetri))} ₾
+                </dd>
+              </div>
+            )}
             {order.deliveryTetri > 0 && (
               <div className="flex justify-between">
                 <dt className="text-ink/55">{dict.order.delivery}</dt>
@@ -170,17 +159,20 @@ export default async function OrderPage({
             </div>
           </dl>
 
-          <div className="mt-5 border-t border-tan/60 pt-5 text-sm">
-            <p className="text-ink/50">{dict.order.shippingTo}</p>
-            <p className="mt-1 font-medium">
+          <div className="mt-5 border-t border-tan/60 pt-4 text-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink/45">
+              {dict.order.shippingTo}
+            </p>
+            <p className="mt-1.5 font-medium">
               {order.customerName} · {order.customerPhone}
             </p>
-            <p className="text-ink/70">
+            <p className="text-ink/60">
               {order.shippingCity}, {order.shippingAddress}
             </p>
           </div>
+        </div>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
             {order.status === "pending" && (
               <Link
                 href={`/${locale}/order/${order.id}`}
@@ -204,7 +196,11 @@ export default async function OrderPage({
               {dict.order.backToShop}
             </Link>
           </div>
-        </div>
+
+        {/* A short human code, not the raw UUID — enough for a support call. */}
+        <p className="mt-6 text-center text-xs text-ink/35">
+          {dict.order.reference}: {order.id.slice(0, 8).toUpperCase()}
+        </p>
       </main>
       <Footer locale={locale} dict={dict} />
     </>
