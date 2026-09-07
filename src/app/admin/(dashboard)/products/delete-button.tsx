@@ -17,7 +17,7 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
           });
         }
       }}
-      className="font-semibold text-terracotta underline decoration-2 underline-offset-4 transition-colors hover:text-brick disabled:cursor-not-allowed disabled:opacity-50"
+      className="text-sm font-medium text-red-600 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending ? "Deleting…" : "Delete"}
     </button>

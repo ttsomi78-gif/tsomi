@@ -68,30 +68,30 @@ export function ColorsEditor({
 
   return (
     <section className="mt-10">
-      <h2 className="font-display text-xl uppercase tracking-wide">
+      <h2 className="text-[15px] font-semibold tracking-tight">
         Colors, photos & sizes
       </h2>
-      <p className="mt-1 text-sm text-ink/50">
+      <p className="mt-1 text-sm text-gray-500">
         One card per color: upload its photos, list its sizes with the quantity
         of each, save. The product&apos;s total stock is the sum of everything
         below — you never type it yourself.
       </p>
 
-      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-tan/60 bg-sand/40 p-4">
+      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+          <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
             Color
           </span>
           <div className="flex items-center gap-2">
             <span
               aria-hidden="true"
-              className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+              className="h-9 w-9 rounded-full border border-gray-300 shadow-sm"
               style={{ backgroundColor: paletteColor(newColorId)?.hex ?? "#eaddc6" }}
             />
             <select
               value={newColorId}
               onChange={(event) => setNewColorId(event.target.value)}
-              className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
+              className="w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
             >
               <option value="">Choose color…</option>
               {COLOR_PALETTE.map((option) => (
@@ -110,7 +110,7 @@ export function ColorsEditor({
           type="button"
           onClick={addDraft}
           disabled={!paletteColor(newColorId)}
-          className="rounded-full bg-ink px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-cream transition-colors hover:bg-terracotta disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           + Add color
         </button>
@@ -123,11 +123,11 @@ export function ColorsEditor({
       </div>
 
       {sharedImages.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-tan/60 p-5">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-ink/60">
+        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             Photos shown for every color
           </h3>
-          <p className="mt-1 text-xs text-ink/45">
+          <p className="mt-1 text-xs text-gray-400">
             Not tied to one color — includes photos left behind when a color was
             removed. Re-upload them inside a color card to reassign.
           </p>
@@ -183,18 +183,18 @@ function ColorCard({
   }
 
   return (
-    <div className="rounded-2xl border border-tan/60 p-5">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center gap-3">
         <span
           aria-hidden="true"
-          className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+          className="h-9 w-9 rounded-full border border-gray-300 shadow-sm"
           style={{ backgroundColor: colorHexOf(colorId, block.colorHex) }}
         />
         <select
           value={colorId}
           onChange={(event) => setColorId(event.target.value)}
           aria-label="Color"
-          className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
+          className="w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
         >
           {/* Pre-palette rows keep their raw name selectable so the card
               renders; picking a real color and saving migrates the rows. */}
@@ -209,10 +209,10 @@ function ColorCard({
             </option>
           ))}
         </select>
-        <span className="text-sm text-ink/50">
+        <span className="text-sm text-gray-500">
           {total} in stock
           {block.draft && (
-            <span className="ml-2 rounded-full bg-gold/20 px-2 py-0.5 text-xs font-bold uppercase text-gold">
+            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
               not saved yet
             </span>
           )}
@@ -226,7 +226,7 @@ function ColorCard({
           >
             <button
               type="submit"
-              className="text-sm font-semibold text-ink/40 underline decoration-2 underline-offset-4 transition-colors hover:text-brick"
+              className="text-sm font-medium text-gray-400 transition-colors hover:text-red-600"
             >
               Remove color
             </button>
@@ -265,7 +265,7 @@ function ColorCard({
                 onChange={(event) =>
                   update(row.key, { size: event.target.value.toUpperCase() })
                 }
-                className="w-40 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm uppercase focus:border-ink focus:outline-none"
+                className="w-40 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm uppercase focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
               <input
                 type="number"
@@ -275,15 +275,15 @@ function ColorCard({
                 onChange={(event) =>
                   update(row.key, { stock: Number(event.target.value) })
                 }
-                className="w-24 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm tabular-nums focus:border-ink focus:outline-none"
+                className="w-24 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm tabular-nums focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
-              <span className="text-xs text-ink/40">pcs</span>
+              <span className="text-xs text-gray-400">pcs</span>
               <button
                 type="button"
                 onClick={() =>
                   setRows((current) => current.filter((r) => r.key !== row.key))
                 }
-                className="ml-1 text-xs font-semibold text-ink/40 underline decoration-2 underline-offset-4 hover:text-brick"
+                className="ml-1 text-xs font-medium text-gray-400 hover:text-red-600"
               >
                 Remove
               </button>
@@ -300,14 +300,14 @@ function ColorCard({
                 { key: newKey(), size: "", stock: 0 },
               ])
             }
-            className="rounded-full border-2 border-ink px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-cream"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             + Size
           </button>
           <button
             type="button"
             onClick={addAllSizes}
-            className="rounded-full border-2 border-tan/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-ink/60 transition-colors hover:border-ink hover:text-ink"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
           >
             + S–XL
           </button>
@@ -315,10 +315,10 @@ function ColorCard({
         </div>
 
         {state?.error && (
-          <p className="mt-2 text-sm font-semibold text-brick">{state.error}</p>
+          <p className="mt-2 text-sm font-medium text-red-600">{state.error}</p>
         )}
         {state?.saved && !state.error && (
-          <p className="mt-2 text-sm font-semibold text-green">Saved</p>
+          <p className="mt-2 text-sm font-medium text-emerald-600">Saved</p>
         )}
       </form>
     </div>
@@ -331,7 +331,7 @@ function SaveColorButton() {
     <button
       type="submit"
       disabled={pending}
-      className="ml-auto rounded-full bg-yolk px-6 py-2 text-xs font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold disabled:cursor-not-allowed disabled:opacity-50"
+      className="ml-auto rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending ? "Saving…" : "Save color"}
     </button>
@@ -356,10 +356,10 @@ function UploadForm({
       <input type="hidden" name="colorName" value={colorName} />
       <UploadTile />
       {state?.error && (
-        <p className="mt-2 text-sm font-semibold text-brick">{state.error}</p>
+        <p className="mt-2 text-sm font-medium text-red-600">{state.error}</p>
       )}
       {state?.saved && !state.error && (
-        <p className="mt-2 text-sm font-semibold text-green">Photos uploaded</p>
+        <p className="mt-2 text-sm font-medium text-emerald-600">Photos uploaded</p>
       )}
     </form>
   );
@@ -369,10 +369,10 @@ function UploadTile() {
   const { pending } = useFormStatus();
   return (
     <label
-      className={`flex h-24 w-20 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-ink/40 transition-colors ${
+      className={`flex h-24 w-20 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-gray-400 transition-colors ${
         pending
-          ? "cursor-wait border-gold text-gold"
-          : "cursor-pointer border-tan hover:border-ink hover:text-ink"
+          ? "cursor-wait border-amber-400 text-amber-500"
+          : "cursor-pointer border-gray-300 hover:border-gray-900 hover:text-gray-900"
       }`}
     >
       <span className="text-xl leading-none">{pending ? "…" : "+"}</span>
@@ -406,7 +406,7 @@ function PhotoStrip({
     <ul className="flex flex-wrap gap-3">
       {images.map((image, index) => (
         <li key={image.id} className="w-24">
-          <div className="relative aspect-4/5 overflow-hidden rounded-lg border border-tan/50 bg-sand">
+          <div className="relative aspect-4/5 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
             <Image src={image.url} alt="" fill sizes="96px" className="object-cover" />
           </div>
           <div className="mt-1 flex items-center justify-between">
@@ -432,7 +432,7 @@ function PhotoStrip({
               <button
                 type="submit"
                 aria-label="Delete photo"
-                className="text-xs font-semibold text-ink/40 hover:text-brick"
+                className="text-xs font-medium text-gray-400 hover:text-red-600"
               >
                 ✕
               </button>
@@ -465,7 +465,7 @@ function MoveButton({
         type="submit"
         disabled={disabled}
         aria-label={direction === "up" ? "Move earlier" : "Move later"}
-        className="flex h-6 w-6 items-center justify-center rounded-full bg-sand text-[10px] font-bold text-ink transition-colors hover:bg-yolk disabled:opacity-30 disabled:hover:bg-sand"
+        className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-gray-600 transition-colors hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-gray-100"
       >
         {direction === "up" ? "←" : "→"}
       </button>

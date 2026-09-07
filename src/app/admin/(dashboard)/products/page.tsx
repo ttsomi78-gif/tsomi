@@ -13,29 +13,27 @@ export default async function AdminProductsPage() {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl uppercase tracking-wide">
-          Products
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight">Products</h1>
         <Link
           href="/admin/products/new"
-          className="rounded-full bg-yolk px-5 py-2 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
         >
-          + New product
+          Add product
         </Link>
       </div>
 
-      <p className="mb-8 text-sm text-ink/60">
+      <p className="mb-6 text-sm text-gray-500">
         {products.length} {products.length === 1 ? "product" : "products"} ·{" "}
-        <span className="text-green">{activeCount} active</span> ·{" "}
-        <span className="text-ink/50">{hiddenCount} hidden</span>
+        <span className="text-emerald-600">{activeCount} active</span> ·{" "}
+        <span className="text-gray-400">{hiddenCount} hidden</span>
       </p>
 
       {products.length === 0 ? (
-        <p className="text-ink/60">No products yet — create the first one.</p>
+        <p className="text-sm text-gray-500">No products yet — create the first one.</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-tan/60">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="bg-blush text-xs uppercase tracking-wide text-ink/60">
+            <thead className="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
               <tr>
                 <th className="px-4 py-3">Photo</th>
                 <th className="px-4 py-3">Name</th>
@@ -48,9 +46,9 @@ export default async function AdminProductsPage() {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-t border-tan/60">
+                <tr key={product.id} className="border-t border-gray-100 transition-colors hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-sand">
+                    <div className="relative h-11 w-11 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200">
                       <Image
                         src={product.image}
                         alt=""
@@ -60,8 +58,8 @@ export default async function AdminProductsPage() {
                       />
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-semibold">{product.name}</td>
-                  <td className="px-4 py-3 capitalize text-ink/70">
+                  <td className="px-4 py-3 font-medium text-gray-900">{product.name}</td>
+                  <td className="px-4 py-3 capitalize text-gray-500">
                     {product.category}
                   </td>
                   <td className="px-4 py-3">{formatGel(product.price)} ₾</td>
@@ -69,10 +67,10 @@ export default async function AdminProductsPage() {
                     <span
                       className={
                         product.stock === 0
-                          ? "font-semibold text-brick"
+                          ? "font-medium text-red-600"
                           : product.stock <= 5
-                            ? "font-semibold text-gold"
-                            : "text-ink/70"
+                            ? "font-medium text-amber-600"
+                            : "text-gray-600"
                       }
                     >
                       {product.stock}
@@ -88,10 +86,10 @@ export default async function AdminProductsPage() {
                       />
                       <button
                         type="submit"
-                        className={`rounded-full border-2 px-3 py-1 text-xs font-bold uppercase tracking-wide transition-colors ${
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                           product.isActive
-                            ? "border-green text-green hover:bg-green hover:text-cream"
-                            : "border-tan/60 text-ink/50 hover:border-ink hover:text-ink"
+                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                         }`}
                       >
                         {product.isActive ? "Active" : "Hidden"}
@@ -102,7 +100,7 @@ export default async function AdminProductsPage() {
                     <div className="flex justify-end gap-4">
                       <Link
                         href={`/admin/products/${product.id}/edit`}
-                        className="font-semibold underline decoration-2 underline-offset-4 hover:text-terracotta"
+                        className="text-sm font-medium text-gray-600 hover:text-gray-900"
                       >
                         Edit
                       </Link>

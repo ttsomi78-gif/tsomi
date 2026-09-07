@@ -7,11 +7,11 @@ import type { OrderStatus } from "@/db/schema";
 const STATUSES: OrderStatus[] = ["pending", "paid", "failed", "expired", "refunded"];
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
-  paid: "border-green text-green",
-  pending: "border-gold text-gold",
-  failed: "border-brick text-brick",
-  expired: "border-tan/70 text-ink/45",
-  refunded: "border-terracotta text-terracotta",
+  paid: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  failed: "bg-red-100 text-red-700",
+  expired: "bg-gray-100 text-gray-500",
+  refunded: "bg-blue-100 text-blue-700",
 };
 
 /** The shop is in Tbilisi — showing the server's UTC clock would just confuse. */
@@ -53,18 +53,18 @@ export default async function AdminOrdersPage({
 
   return (
     <div>
-      <h1 className="mb-2 font-display text-3xl uppercase tracking-wide">Orders</h1>
+      <h1 className="mb-2 text-xl font-semibold tracking-tight">Orders</h1>
 
-      <p className="mb-6 text-sm text-ink/60">
-        {stats.total} total · <span className="text-green">{stats.paid} paid</span> ·{" "}
-        <span className="text-gold">{stats.pending} pending</span> ·{" "}
-        <span className="text-ink/50">{stats.unsuccessful} unsuccessful</span> ·{" "}
-        <span className="font-semibold text-ink">
+      <p className="mb-5 text-sm text-gray-500">
+        {stats.total} total · <span className="text-emerald-600">{stats.paid} paid</span> ·{" "}
+        <span className="text-amber-600">{stats.pending} pending</span> ·{" "}
+        <span className="text-gray-400">{stats.unsuccessful} unsuccessful</span> ·{" "}
+        <span className="font-semibold text-gray-900">
           {formatGel(tetriToGel(stats.revenueTetri))} ₾ collected
         </span>
       </p>
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap gap-1.5">
         <FilterPill href={filterHref()} active={!status}>
           All
         </FilterPill>
@@ -80,12 +80,12 @@ export default async function AdminOrdersPage({
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-ink/60">No orders here yet.</p>
+        <p className="text-sm text-gray-500">No orders here yet.</p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-2xl border border-tan/60">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="bg-blush text-xs uppercase tracking-wide text-ink/60">
+              <thead className="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Placed</th>
                   <th className="px-4 py-3">Customer</th>
@@ -97,23 +97,23 @@ export default async function AdminOrdersPage({
               </thead>
               <tbody>
                 {rows.map((order) => (
-                  <tr key={order.id} className="border-t border-tan/60">
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/70">
+                  <tr key={order.id} className="border-t border-gray-100 transition-colors hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">
                       {dateFormat.format(order.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-semibold">{order.customerName}</span>
-                      <span className="block text-xs text-ink/50">
+                      <span className="font-medium text-gray-900">{order.customerName}</span>
+                      <span className="block text-xs text-gray-400">
                         {order.customerEmail}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-ink/70">{order.shippingCity}</td>
+                    <td className="px-4 py-3 text-gray-500">{order.shippingCity}</td>
                     <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums">
                       {formatGel(tetriToGel(order.totalTetri))} ₾
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block rounded-full border-2 px-3 py-1 text-xs font-bold uppercase tracking-wide ${STATUS_STYLES[order.status]}`}
+                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium capitalize ${STATUS_STYLES[order.status]}`}
                       >
                         {order.status}
                       </span>
@@ -121,7 +121,7 @@ export default async function AdminOrdersPage({
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="font-semibold underline decoration-2 underline-offset-4 hover:text-terracotta"
+                        className="text-sm font-medium text-gray-600 hover:text-gray-900"
                       >
                         View
                       </Link>
@@ -140,7 +140,7 @@ export default async function AdminOrdersPage({
               >
                 ← Previous
               </PageLink>
-              <span className="text-ink/50">
+              <span className="text-gray-500">
                 Page {page} of {pageCount} · {total} orders
               </span>
               <PageLink
@@ -169,10 +169,10 @@ function FilterPill({
   return (
     <Link
       href={href}
-      className={`rounded-full border-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wide capitalize transition-colors ${
+      className={`rounded-lg px-3 py-1.5 text-[13px] font-medium capitalize transition-colors ${
         active
-          ? "border-ink bg-ink text-cream"
-          : "border-tan/60 text-ink/60 hover:border-ink hover:text-ink"
+          ? "bg-gray-900 text-white"
+          : "bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50 hover:text-gray-900"
       }`}
     >
       {children}
@@ -190,10 +190,10 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return <span className="text-ink/25">{children}</span>;
+    return <span className="text-gray-300">{children}</span>;
   }
   return (
-    <Link href={href} className="font-semibold hover:text-terracotta">
+    <Link href={href} className="font-medium text-gray-600 hover:text-gray-900">
       {children}
     </Link>
   );

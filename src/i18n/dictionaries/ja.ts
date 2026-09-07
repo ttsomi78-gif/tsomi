@@ -205,6 +205,10 @@ const dictionary: Dictionary = {
     tryAgain: "もう一度試す",
     backToShop: "ショップに戻る",
     refresh: "状況を更新",
+    download: "レシートをダウンロード",
+    printHint: "このページをPDFとして保存するか、印刷してください。",
+    receiptTitle: "ご注文レシート",
+    date: "日付",
   },
   language: {
     label: "言語",

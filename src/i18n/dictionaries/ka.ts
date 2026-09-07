@@ -205,6 +205,10 @@ const dictionary: Dictionary = {
     tryAgain: "ხელახლა ცდა",
     backToShop: "მაღაზიაში დაბრუნება",
     refresh: "სტატუსის განახლება",
+    download: "ქვითრის გადმოწერა",
+    printHint: "შეინახე ეს გვერდი PDF-ად ან ამობეჭდე.",
+    receiptTitle: "შეკვეთის ქვითარი",
+    date: "თარიღი",
   },
   language: {
     label: "ენა",

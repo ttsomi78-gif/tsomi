@@ -6,11 +6,11 @@ import { getOrderWithItems } from "@/db/queries";
 import type { OrderStatus } from "@/db/schema";
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
-  paid: "border-green text-green",
-  pending: "border-gold text-gold",
-  failed: "border-brick text-brick",
-  expired: "border-tan/70 text-ink/45",
-  refunded: "border-terracotta text-terracotta",
+  paid: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  failed: "bg-red-100 text-red-700",
+  expired: "bg-gray-100 text-gray-500",
+  refunded: "bg-blue-100 text-blue-700",
 };
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
@@ -37,28 +37,28 @@ export default async function AdminOrderDetailPage({
     <div className="max-w-3xl">
       <Link
         href="/admin/orders"
-        className="text-sm font-semibold text-ink/50 underline decoration-2 underline-offset-4 hover:text-terracotta"
+        className="text-sm font-medium text-gray-500 hover:text-gray-900"
       >
         ← All orders
       </Link>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-3xl uppercase tracking-wide">Order</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Order</h1>
         <span
-          className={`rounded-full border-2 px-3 py-1 text-xs font-bold uppercase tracking-wide ${STATUS_STYLES[order.status]}`}
+          className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${STATUS_STYLES[order.status]}`}
         >
           {order.status}
         </span>
       </div>
-      <p className="mt-1 font-mono text-xs text-ink/45">{order.id}</p>
+      <p className="mt-1 font-mono text-xs text-gray-400">{order.id}</p>
 
       {order.failureReason && (
-        <p className="mt-4 rounded-2xl bg-brick/10 px-4 py-3 text-sm font-medium text-brick">
+        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {order.failureReason}
         </p>
       )}
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Panel title="Customer">
           <Row label="Name" value={order.customerName} />
           <Row label="Email" value={order.customerEmail} />
@@ -96,9 +96,9 @@ export default async function AdminOrderDetailPage({
         </Panel>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-2xl border border-tan/60">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="bg-blush text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-4 py-3">Item</th>
               <th className="px-4 py-3">Unit</th>
@@ -108,11 +108,11 @@ export default async function AdminOrderDetailPage({
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-t border-tan/60">
+              <tr key={item.id} className="border-t border-gray-100">
                 <td className="px-4 py-3">
                   <span className="font-semibold">{item.name}</span>
                   {(item.color || item.size) && (
-                    <span className="ml-1.5 rounded-full bg-sand px-2 py-0.5 text-xs font-semibold text-ink/70">
+                    <span className="ml-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                       {[colorLabel(item.color, "en"), item.size]
                         .filter(Boolean)
                         .join(" / ")}
@@ -121,12 +121,12 @@ export default async function AdminOrderDetailPage({
                   {item.productId ? (
                     <Link
                       href={`/admin/products/${item.productId}/edit`}
-                      className="block text-xs text-ink/45 underline decoration-2 underline-offset-2 hover:text-terracotta"
+                      className="block text-xs text-gray-400 hover:text-gray-600"
                     >
                       {item.productId}
                     </Link>
                   ) : (
-                    <span className="block text-xs text-ink/35">
+                    <span className="block text-xs text-gray-300">
                       product since deleted
                     </span>
                   )}
@@ -141,9 +141,9 @@ export default async function AdminOrderDetailPage({
               </tr>
             ))}
           </tbody>
-          <tfoot className="border-t-2 border-tan/60 bg-sand/40">
+          <tfoot className="border-t border-gray-200 bg-gray-50">
             <tr>
-              <td colSpan={3} className="px-4 py-2 text-ink/55">
+              <td colSpan={3} className="px-4 py-2 text-gray-500">
                 Items
               </td>
               <td className="px-4 py-2 text-right tabular-nums">
@@ -151,7 +151,7 @@ export default async function AdminOrderDetailPage({
               </td>
             </tr>
             <tr>
-              <td colSpan={3} className="px-4 py-2 text-ink/55">
+              <td colSpan={3} className="px-4 py-2 text-gray-500">
                 Delivery
               </td>
               <td className="px-4 py-2 text-right tabular-nums">
@@ -162,7 +162,7 @@ export default async function AdminOrderDetailPage({
               <td colSpan={3} className="px-4 py-3 font-bold">
                 Total
               </td>
-              <td className="px-4 py-3 text-right font-display text-lg text-terracotta tabular-nums">
+              <td className="px-4 py-3 text-right text-base font-semibold tabular-nums">
                 {formatGel(tetriToGel(order.totalTetri))} ₾
               </td>
             </tr>
@@ -181,8 +181,8 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-tan/60 p-5">
-      <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink/45">
+    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
         {title}
       </h2>
       <dl className="space-y-2 text-sm">{children}</dl>
@@ -201,7 +201,7 @@ function Row({
 }) {
   return (
     <div className="flex flex-wrap justify-between gap-x-3">
-      <dt className="text-ink/50">{label}</dt>
+      <dt className="text-gray-500">{label}</dt>
       <dd
         className={`text-right ${mono ? "break-all font-mono text-xs" : "font-medium"}`}
       >

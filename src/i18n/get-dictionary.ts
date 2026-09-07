@@ -145,6 +145,10 @@ export interface Dictionary {
     tryAgain: string;
     backToShop: string;
     refresh: string;
+    download: string;
+    printHint: string;
+    receiptTitle: string;
+    date: string;
   };
   language: {
     label: string;

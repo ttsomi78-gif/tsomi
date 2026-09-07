@@ -205,6 +205,10 @@ const dictionary: Dictionary = {
     tryAgain: "Try again",
     backToShop: "Back to the shop",
     refresh: "Refresh status",
+    download: "Download receipt",
+    printHint: "Save this page as PDF or print it.",
+    receiptTitle: "Order receipt",
+    date: "Date",
   },
   language: {
     label: "Language",

@@ -39,7 +39,7 @@ const COMMON_SIZES = ["S", "M", "L", "XL"];
 const MAX_PHOTOS_PER_COLOR = 8;
 
 const inputClass =
-  "w-full rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm focus:border-ink focus:outline-none";
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
 
 /**
  * Single-screen product creation. Photos live in React state as File objects
@@ -130,12 +130,12 @@ export function NewProductForm() {
 
       {/* ── globals ── */}
       <section className="space-y-4">
-        <h2 className="border-b border-tan/60 pb-2 font-display text-lg uppercase tracking-wide">
+        <h2 className="border-b border-gray-200 pb-2 text-[15px] font-semibold tracking-tight">
           Basics
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+            <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
               Category
             </span>
             <select name="category" required className={inputClass}>
@@ -147,7 +147,7 @@ export function NewProductForm() {
             </select>
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+            <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
               Price (GEL)
             </span>
             <input
@@ -162,24 +162,24 @@ export function NewProductForm() {
         </div>
 
         <div>
-          <div className="flex gap-1 rounded-full bg-sand/70 p-1">
+          <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
             {LOCALES.map((locale) => (
               <button
                 key={locale.id}
                 type="button"
                 onClick={() => setActiveLocale(locale.id)}
-                className={`flex-1 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors ${
+                className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
                   activeLocale === locale.id
-                    ? "bg-ink text-cream"
-                    : "text-ink/55 hover:text-ink"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
                 {locale.label}
-                {locale.required && <span className="ml-0.5 text-terracotta">*</span>}
+                {locale.required && <span className="ml-0.5 text-red-500">*</span>}
               </button>
             ))}
           </div>
-          <p className="mt-2 text-xs text-ink/45">
+          <p className="mt-2 text-xs text-gray-400">
             English is required. Any language left blank shows English on the
             site automatically.
           </p>
@@ -192,7 +192,7 @@ export function NewProductForm() {
               }`}
             >
               <label className="block">
-                <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+                <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
                   Name {locale.required && "(required)"}
                 </span>
                 <input
@@ -204,7 +204,7 @@ export function NewProductForm() {
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+                <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
                   Tag (optional — e.g. NEW)
                 </span>
                 <input
@@ -220,17 +220,17 @@ export function NewProductForm() {
 
       {/* ── color blocks ── */}
       <section className="space-y-4">
-        <h2 className="border-b border-tan/60 pb-2 font-display text-lg uppercase tracking-wide">
+        <h2 className="border-b border-gray-200 pb-2 text-[15px] font-semibold tracking-tight">
           Colors, photos &amp; sizes
         </h2>
 
         {colors.map((color) => (
-          <div key={color.key} className="rounded-2xl border border-tan/60 p-4">
+          <div key={color.key} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-center gap-3">
               {/* Swatch preview follows the dropdown — the palette owns the hex. */}
               <span
                 aria-hidden="true"
-                className="h-9 w-9 rounded-full border border-ink/15 shadow-sm"
+                className="h-9 w-9 rounded-full border border-gray-300 shadow-sm"
                 style={{
                   backgroundColor: paletteColor(color.colorId)?.hex ?? "#eaddc6",
                 }}
@@ -242,7 +242,7 @@ export function NewProductForm() {
                   patchColor(color.key, { colorId: event.target.value })
                 }
                 required
-                className="w-44 rounded-lg border border-tan/60 bg-cream px-3 py-2 text-sm font-bold focus:border-ink focus:outline-none"
+                className="w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
               >
                 <option value="" disabled>
                   Choose color…
@@ -259,7 +259,7 @@ export function NewProductForm() {
                   </option>
                 ))}
               </select>
-              <span className="text-sm text-ink/50">
+              <span className="text-sm text-gray-500">
                 {color.sizes.reduce((s, row) => s + (Number(row.stock) || 0), 0)} pcs
               </span>
               {colors.length > 1 && (
@@ -269,7 +269,7 @@ export function NewProductForm() {
                     color.photos.forEach((photo) => URL.revokeObjectURL(photo.preview));
                     setColors((current) => current.filter((c) => c.key !== color.key));
                   }}
-                  className="ml-auto text-sm font-semibold text-ink/40 underline decoration-2 underline-offset-4 hover:text-brick"
+                  className="ml-auto text-sm font-medium text-gray-400 hover:text-red-600"
                 >
                   Remove color
                 </button>
@@ -278,14 +278,14 @@ export function NewProductForm() {
 
             {/* photo tiles: thumbnails with ✕, plus a dashed add tile */}
             <div className="mt-4">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+              <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
                 Photos of this color
               </span>
               <div className="flex flex-wrap gap-2">
                 {color.photos.map((photo) => (
                   <span
                     key={photo.key}
-                    className="group relative block h-24 w-20 overflow-hidden rounded-xl border border-tan/50 bg-sand"
+                    className="group relative block h-24 w-20 overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
                   >
                     <Image
                       src={photo.preview}
@@ -299,14 +299,14 @@ export function NewProductForm() {
                       type="button"
                       onClick={() => removePhoto(color.key, photo.key)}
                       aria-label="Remove photo"
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-[10px] font-bold text-cream opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900/70 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       ✕
                     </button>
                   </span>
                 ))}
                 {color.photos.length < MAX_PHOTOS_PER_COLOR && (
-                  <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-tan text-ink/40 transition-colors hover:border-ink hover:text-ink">
+                  <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-gray-900 hover:text-gray-900">
                     <span className="text-xl leading-none">+</span>
                     <span className="text-[10px] font-bold uppercase tracking-wide">
                       Photo
@@ -332,7 +332,7 @@ export function NewProductForm() {
             </div>
 
             <div className="mt-4 space-y-2">
-              <span className="block text-xs font-bold uppercase tracking-wide text-ink/55">
+              <span className="block text-[13px] font-medium text-gray-700">
                 Sizes &amp; quantity
               </span>
               {color.sizes.map((row) => (
@@ -350,7 +350,7 @@ export function NewProductForm() {
                         ),
                       })
                     }
-                    className="w-40 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm uppercase focus:border-ink focus:outline-none"
+                    className="w-40 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm uppercase focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   />
                   <input
                     type="number"
@@ -366,9 +366,9 @@ export function NewProductForm() {
                         ),
                       })
                     }
-                    className="w-24 rounded-lg border border-tan/60 bg-cream px-3 py-1.5 text-sm tabular-nums focus:border-ink focus:outline-none"
+                    className="w-24 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm tabular-nums focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   />
-                  <span className="text-xs text-ink/40">pcs</span>
+                  <span className="text-xs text-gray-400">pcs</span>
                   <button
                     type="button"
                     onClick={() =>
@@ -376,7 +376,7 @@ export function NewProductForm() {
                         sizes: color.sizes.filter((r) => r.key !== row.key),
                       })
                     }
-                    className="ml-1 text-xs font-semibold text-ink/40 underline decoration-2 underline-offset-4 hover:text-brick"
+                    className="ml-1 text-xs font-medium text-gray-400 hover:text-red-600"
                   >
                     ✕
                   </button>
@@ -390,7 +390,7 @@ export function NewProductForm() {
                       sizes: [...color.sizes, { key: newKey(), size: "", stock: 0 }],
                     })
                   }
-                  className="rounded-full border-2 border-ink px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-cream"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   + Size
                 </button>
@@ -407,7 +407,7 @@ export function NewProductForm() {
                       ],
                     });
                   }}
-                  className="rounded-full border-2 border-tan/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-ink/60 transition-colors hover:border-ink hover:text-ink"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
                 >
                   + S–XL
                 </button>
@@ -424,22 +424,22 @@ export function NewProductForm() {
               { key: newKey(), colorId: "", sizes: [], photos: [] },
             ])
           }
-          className="w-full rounded-2xl border-2 border-dashed border-tan px-4 py-4 text-sm font-bold uppercase tracking-wide text-ink/55 transition-colors hover:border-ink hover:text-ink"
+          className="w-full rounded-xl border-2 border-dashed border-gray-300 bg-white px-4 py-4 text-sm font-medium text-gray-500 transition-colors hover:border-gray-900 hover:text-gray-900"
         >
           + Add color
         </button>
       </section>
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-tan/60 pt-5">
-        <p className="text-sm text-ink/55">
+      <div className="flex flex-wrap items-center gap-4 border-t border-gray-200 pt-5">
+        <p className="text-sm text-gray-500">
           Total stock:{" "}
-          <span className="font-bold text-ink tabular-nums">{totalStock}</span>{" "}
+          <span className="font-semibold text-gray-900 tabular-nums">{totalStock}</span>{" "}
           — counted automatically
         </p>
         <button
           type="submit"
           disabled={isPending}
-          className="ml-auto rounded-full bg-yolk px-8 py-3 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold disabled:cursor-not-allowed disabled:opacity-50"
+          className="ml-auto rounded-lg bg-gray-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Creating…" : "Create product"}
         </button>
@@ -448,7 +448,7 @@ export function NewProductForm() {
       {state?.error && (
         <p
           role="alert"
-          className="rounded-2xl bg-brick/10 px-4 py-3 text-sm font-semibold text-brick"
+          className="rounded-2xl bg-brick/10 px-4 py-3 text-sm font-medium text-red-600"
         >
           {state.error}
         </p>

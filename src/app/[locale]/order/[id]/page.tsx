@@ -173,6 +173,16 @@ export default async function OrderPage({
         </div>
 
         <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {order.status === "paid" && (
+              <a
+                href={`/${locale}/order/${order.id}/receipt`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-ink px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-cream transition-colors hover:bg-terracotta"
+              >
+                {dict.order.download}
+              </a>
+            )}
             {order.status === "pending" && (
               <Link
                 href={`/${locale}/order/${order.id}`}

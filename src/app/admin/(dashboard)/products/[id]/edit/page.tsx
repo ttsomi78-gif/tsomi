@@ -58,9 +58,7 @@ export default async function EditProductPage({
 
   return (
     <div>
-      <h1 className="mb-8 font-display text-3xl uppercase tracking-wide">
-        Edit product
-      </h1>
+      <h1 className="mb-8 text-xl font-semibold tracking-tight">Edit product</h1>
       <ProductForm
         stockManagedByColors={variants.length > 0}
         product={{

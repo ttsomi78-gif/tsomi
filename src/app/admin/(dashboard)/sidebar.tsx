@@ -68,35 +68,38 @@ export function Sidebar({
   };
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col bg-ink text-cream lg:sticky lg:top-0 lg:flex lg:h-screen">
-      <div className="px-6 py-7">
-        <Link href="/admin" className="font-display text-2xl uppercase tracking-wide">
-          TSOMI
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+      <div className="px-5 py-6">
+        <Link
+          href="/admin"
+          className="flex items-center gap-2.5 font-semibold text-gray-900"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 font-display text-sm uppercase text-white">
+            T
+          </span>
+          <span className="text-[15px] tracking-tight">TSOMI Admin</span>
         </Link>
-        <p className="mt-0.5 text-xs uppercase tracking-widest text-cream/50">
-          Admin panel
-        </p>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 active
-                  ? "bg-cream text-ink"
-                  : "text-cream/70 hover:bg-cream/10 hover:text-cream"
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-[18px] w-[18px] shrink-0" />
               <span>{label}</span>
               {badges[href] !== undefined && badges[href] > 0 && (
                 <span
-                  className={`ml-auto rounded-full px-2 py-0.5 text-xs ${
-                    active ? "bg-ink/10 text-ink" : "bg-cream/10 text-cream/70"
+                  className={`ml-auto rounded-full px-2 py-0.5 text-xs font-medium ${
+                    active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   {badges[href]}
@@ -107,11 +110,11 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="border-t border-cream/10 px-3 py-4">
+      <div className="border-t border-gray-200 px-3 py-3">
         <form action={logout}>
           <button
             type="submit"
-            className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-cream/70 transition-colors hover:bg-cream/10 hover:text-cream"
+            className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             Log out
           </button>

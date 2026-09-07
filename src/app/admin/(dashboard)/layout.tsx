@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   ]);
 
   return (
-    <div className="min-h-screen bg-cream text-ink lg:flex">
+    <div className="min-h-screen bg-gray-100 text-gray-900 antialiased lg:flex">
       <Sidebar
         productCount={stats.total}
         pendingOrderCount={orderStats.pending}
@@ -23,7 +23,7 @@ export default async function DashboardLayout({
 
       <div className="flex-1">
         <MobileTopbar />
-        <main className="mx-auto max-w-330 px-4 py-10 sm:px-6 lg:px-10">
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>

@@ -12,11 +12,11 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-tan/60 bg-white/50 p-6">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
-        {label}
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className={`mt-1.5 text-2xl font-semibold tracking-tight ${accent}`}>
+        {value}
       </p>
-      <p className={`mt-2 font-display text-4xl ${accent}`}>{value}</p>
     </div>
   );
 }
@@ -29,66 +29,60 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl uppercase tracking-wide">
-        Dashboard
-      </h1>
-      <p className="mt-1 text-ink/60">Overview of your TSOMI shop.</p>
+      <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+      <p className="mt-1 text-sm text-gray-500">Overview of your TSOMI shop.</p>
 
-      <h2 className="mt-8 text-xs font-bold uppercase tracking-widest text-ink/45">
-        Sales
-      </h2>
-      <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <h2 className="mt-8 text-[13px] font-semibold text-gray-500">Sales</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           label="Collected"
           value={`${formatGel(tetriToGel(orderStats.revenueTetri))} ₾`}
-          accent="text-green"
+          accent="text-emerald-600"
         />
-        <StatCard label="Paid orders" value={orderStats.paid} accent="text-ink" />
-        <StatCard label="Pending" value={orderStats.pending} accent="text-gold" />
+        <StatCard label="Paid orders" value={orderStats.paid} accent="text-gray-900" />
+        <StatCard label="Pending" value={orderStats.pending} accent="text-amber-600" />
         <StatCard
           label="Unsuccessful"
           value={orderStats.unsuccessful}
-          accent="text-ink/40"
+          accent="text-gray-400"
         />
       </div>
 
-      <h2 className="mt-10 text-xs font-bold uppercase tracking-widest text-ink/45">
-        Catalog
-      </h2>
-      <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard label="Total products" value={stats.total} accent="text-ink" />
-        <StatCard label="Active" value={stats.active} accent="text-green" />
-        <StatCard label="Hidden" value={stats.hidden} accent="text-ink/40" />
-        <StatCard label="Tees" value={stats.tees} accent="text-terracotta" />
-        <StatCard label="Bags" value={stats.bags} accent="text-gold" />
+      <h2 className="mt-8 text-[13px] font-semibold text-gray-500">Catalog</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <StatCard label="Total products" value={stats.total} accent="text-gray-900" />
+        <StatCard label="Active" value={stats.active} accent="text-emerald-600" />
+        <StatCard label="Hidden" value={stats.hidden} accent="text-gray-400" />
+        <StatCard label="Tees" value={stats.tees} accent="text-gray-900" />
+        <StatCard label="Bags" value={stats.bags} accent="text-amber-600" />
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-tan/60 bg-white/50 p-6">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div>
-            <p className="font-semibold">Manage your catalog</p>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm font-semibold">Manage your catalog</p>
+            <p className="text-sm text-gray-500">
               Add, edit, hide, or delete products from the storefront.
             </p>
           </div>
           <Link
             href="/admin/products"
-            className="ml-auto rounded-full bg-yolk px-5 py-2 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold"
+            className="ml-auto rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
           >
             Go to products
           </Link>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-tan/60 bg-white/50 p-6">
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div>
-            <p className="font-semibold">Fulfil orders</p>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm font-semibold">Fulfil orders</p>
+            <p className="text-sm text-gray-500">
               Review payments, addresses, and what needs shipping.
             </p>
           </div>
           <Link
             href="/admin/orders"
-            className="ml-auto rounded-full bg-yolk px-5 py-2 text-sm font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold"
+            className="ml-auto rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
           >
             Go to orders
           </Link>

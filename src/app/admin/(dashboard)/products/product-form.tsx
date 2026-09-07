@@ -8,7 +8,7 @@ import { updateProduct, type ProductFormState } from "./actions";
 const initialState: ProductFormState = undefined;
 
 const inputClass =
-  "w-full rounded-lg border border-tan/60 bg-cream px-4 py-2.5 text-ink transition-colors focus:border-ink focus:outline-none";
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors placeholder:text-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
 
 /** Shape the edit page hands in — every localized field is nullable except the English ones. */
 export type EditableProduct = {
@@ -139,7 +139,7 @@ export function ProductForm({
         </div>
 
         {product === undefined && (
-          <p className="rounded-xl bg-sand/60 px-4 py-3 text-sm text-ink/60">
+          <p className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
             Photos per color, sizes and quantities are set on the next screen —
             create the product first and you&apos;ll land there.
           </p>
@@ -152,20 +152,20 @@ export function ProductForm({
           description="English is required. Leave other languages blank to fall back to English automatically."
         />
 
-        <div className="flex gap-1 rounded-full border border-tan/60 bg-blush p-1">
+        <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
           {locales.map((locale) => (
             <button
               key={locale}
               type="button"
               onClick={() => setActiveLocale(locale)}
-              className={`flex-1 rounded-full px-3 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
+              className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
                 activeLocale === locale
-                  ? "bg-ink text-cream"
-                  : "text-ink/60 hover:text-ink"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900"
               }`}
             >
               {localeLabels[locale]}
-              {locale === "en" && <span className="ml-1 text-terracotta">*</span>}
+              {locale === "en" && <span className="ml-1 text-red-500">*</span>}
             </button>
           ))}
         </div>
@@ -174,7 +174,7 @@ export function ProductForm({
           <div
             key={locale}
             hidden={activeLocale !== locale}
-            className="space-y-5 rounded-2xl border border-tan/60 bg-cream/60 p-5"
+            className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
           >
             <Field label={`Name${locale === "en" ? "" : " (optional)"}`}>
               <input
@@ -210,13 +210,13 @@ export function ProductForm({
 
       {/* No photo fields here on purpose: photos live in the color cards
           below, and the catalog cover is automatically the first photo. */}
-      <p className="rounded-xl bg-sand/60 px-4 py-3 text-sm text-ink/60">
+      <p className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
         Photos are managed per color below. The first photo automatically
         becomes the catalog cover.
       </p>
 
       {state?.error && (
-        <p className="text-sm font-semibold text-brick">{state.error}</p>
+        <p className="text-sm font-medium text-red-600">{state.error}</p>
       )}
 
       <SubmitButton isEdit={!!product} />
@@ -240,9 +240,9 @@ function capitalize(locale: LocaleId): string {
 
 function SectionHeading({ title, description }: { title: string; description: string }) {
   return (
-    <div className="border-b border-tan/60 pb-3">
-      <h2 className="font-display text-lg uppercase tracking-wide">{title}</h2>
-      <p className="mt-1 text-sm text-ink/60">{description}</p>
+    <div className="border-b border-gray-200 pb-3">
+      <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
+      <p className="mt-0.5 text-sm text-gray-500">{description}</p>
     </div>
   );
 }
@@ -253,7 +253,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-yolk px-8 py-3 font-bold uppercase tracking-wide text-ink shadow-lg shadow-yolk/40 transition-colors hover:bg-gold disabled:cursor-not-allowed disabled:opacity-50"
+      className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50 px-6 py-2.5"
     >
       {pending ? "Saving…" : isEdit ? "Save changes" : "Create product"}
     </button>
@@ -269,7 +269,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold uppercase tracking-wide text-ink/70">
+      <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
         {label}
       </span>
       {children}

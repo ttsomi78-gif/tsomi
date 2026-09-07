@@ -205,6 +205,10 @@ const dictionary: Dictionary = {
     tryAgain: "Попробовать снова",
     backToShop: "Вернуться в магазин",
     refresh: "Обновить статус",
+    download: "Скачать чек",
+    printHint: "Сохраните эту страницу в PDF или распечатайте.",
+    receiptTitle: "Чек заказа",
+    date: "Дата",
   },
   language: {
     label: "Язык",
