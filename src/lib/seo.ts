@@ -90,22 +90,22 @@ export const pageMeta: Record<string, Record<LocaleId, PageMeta>> = {
     en: {
       title: "Delivery & Returns",
       description:
-        "Flat-fee delivery across Georgia in 2–5 business days, and 14-day returns on unworn items. Simple rules, no small print.",
+        "Free delivery across Georgia in 2–5 business days, and 14-day returns on unworn items. Simple rules, no small print.",
     },
     ka: {
       title: "მიწოდება და დაბრუნება",
       description:
-        "მიწოდება მთელ საქართველოში 2–5 სამუშაო დღეში და 14-დღიანი დაბრუნება უტარებელ ნივთებზე. მარტივი წესები.",
+        "უფასო მიწოდება მთელ საქართველოში 2–5 სამუშაო დღეში და 14-დღიანი დაბრუნება უტარებელ ნივთებზე. მარტივი წესები.",
     },
     ru: {
       title: "Доставка и возврат",
       description:
-        "Доставка по всей Грузии за 2–5 рабочих дней и возврат в течение 14 дней для неношеных вещей. Простые правила.",
+        "Бесплатная доставка по всей Грузии за 2–5 рабочих дней и возврат в течение 14 дней для неношеных вещей. Простые правила.",
     },
     ja: {
       title: "配送と返品",
       description:
-        "ジョージア全土へ2〜5営業日でお届け。未着用品は14日以内返品可能。シンプルなルール。",
+        "ジョージア全土へ送料無料で2〜5営業日でお届け。未着用品は14日以内返品可能。シンプルなルール。",
     },
   },
   terms: {
