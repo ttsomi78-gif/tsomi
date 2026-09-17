@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
@@ -40,10 +39,22 @@ export function CheckoutForm({
   deliveryTetri: number;
 }) {
   const { items, subtotal, hydrated, keyOf } = useCart();
-  const [state, formAction] = useActionState(startCheckout, undefined);
+  const [state, formAction, isPending] = useActionState(startCheckout, undefined);
 
   const delivery = tetriToGel(deliveryTetri);
   const total = subtotal + delivery;
+
+  // Submitted by hand rather than through `<form action>`: React resets an
+  // uncontrolled form the moment its action resolves — including resolving
+  // with an error — which wiped name, email, phone and address every time
+  // the last unit sold out under a customer, or the bank was unreachable.
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!form.reportValidity()) return;
+    const formData = new FormData(form);
+    startTransition(() => formAction(formData));
+  }
 
   // Until localStorage is read the cart is unknown — showing the empty state
   // here would flash "your cart is empty" at customers who have items.
@@ -66,7 +77,7 @@ export function CheckoutForm({
   }
 
   return (
-    <form action={formAction} className="grid gap-8 lg:grid-cols-[1fr_24rem]">
+    <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1fr_24rem]">
       <input type="hidden" name="locale" value={locale} />
       {/* Only ids and quantities travel; the server re-prices from the database. */}
       <input
@@ -212,6 +223,7 @@ export function CheckoutForm({
         <SubmitButton
           label={`${dict.checkout.pay} ${formatGel(total)} ₾`}
           pendingLabel={dict.checkout.paying}
+          pending={isPending}
         />
 
         <p className="mt-3 text-center text-[11px] leading-relaxed text-ink/40">
@@ -225,11 +237,13 @@ export function CheckoutForm({
 function SubmitButton({
   label,
   pendingLabel,
+  pending,
 }: {
   label: string;
   pendingLabel: string;
+  /** From useActionState — useFormStatus only sees `<form action>` submits. */
+  pending: boolean;
 }) {
-  const { pending } = useFormStatus();
   return (
     <button
       type="submit"

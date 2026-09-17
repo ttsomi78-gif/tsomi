@@ -4,6 +4,7 @@ const dictionary: Dictionary = {
   nav: {
     home: "ホーム",
     catalog: "カタログ",
+    accessories: "アクセサリー",
     story: "ストーリー",
     instagram: "Instagram",
     shop: "ショップへ",
@@ -128,6 +129,7 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "カタログ",
+    categories: { tees: "Tシャツ", bags: "バッグ", accessories: "アクセサリー" },
     filterAll: "すべて",
     empty: "まだ何もありません — また後でチェックしてください。",
     itemCount: "{count}点",

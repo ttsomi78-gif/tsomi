@@ -18,12 +18,15 @@ export function CatalogGrid({
   products,
   locale,
   dict,
+  initialCategory,
 }: {
   products: Product[];
   locale: LocaleId;
   dict: Dictionary;
+  /** Pill preselected on load — the /catalog/<category> pages set it. */
+  initialCategory?: CategoryId;
 }) {
-  const [active, setActive] = useState<Filter>("all");
+  const [active, setActive] = useState<Filter>(initialCategory ?? "all");
   const [sort, setSort] = useState<SortId>("featured");
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -86,7 +89,7 @@ export function CatalogGrid({
                 onClick={() => setActive(category.id)}
                 count={counts.get(category.id) ?? 0}
               >
-                {category.label}
+                {dict.catalog.categories[category.id]}
               </FilterButton>
             ))}
           </div>

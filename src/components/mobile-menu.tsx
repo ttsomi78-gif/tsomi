@@ -23,6 +23,16 @@ export function MobileMenu({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // Only the most specific match is "current": on /en/catalog/accessories
+  // that's Accessories, not Catalog as well. Home (`/en`) is exact-only.
+  const activeHref = items.reduce<string | null>((best, item) => {
+    const matches =
+      pathname === item.href ||
+      (item.href.length > 3 && pathname.startsWith(`${item.href}/`));
+    if (!matches) return best;
+    return best === null || item.href.length > best.length ? item.href : best;
+  }, null);
+
   // navigating away (including same-page anchor links via onClick) closes the panel
   useEffect(() => {
     setOpen(false);
@@ -88,9 +98,7 @@ export function MobileMenu({
             >
               <div className="mx-auto flex max-w-330 flex-col px-4 pb-6 pt-3 sm:px-6">
                 {items.map((item, index) => {
-                  const active =
-                    pathname === item.href ||
-                    (item.href.length > 3 && pathname.startsWith(item.href));
+                  const active = item.href === activeHref;
                   return (
                     <motion.div
                       key={item.href}

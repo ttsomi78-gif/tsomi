@@ -87,7 +87,7 @@ export default async function OrderPage({
   return (
     <>
       <Header locale={locale} dict={dict} />
-      <OrderEffects status={order.status} />
+      <OrderEffects orderId={order.id} status={order.status} />
       <main className="mx-auto max-w-xl px-4 py-12 sm:px-6 sm:py-16">
         {/* Centered status header — the customer needs the outcome, not a
             technical dossier. Raw failure reasons and the UUID live in the

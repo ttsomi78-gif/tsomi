@@ -1,10 +1,11 @@
-import type { LocaleId } from "@/lib/products";
+import type { CategoryId, LocaleId } from "@/lib/products";
 import en from "./dictionaries/en";
 
 export interface Dictionary {
   nav: {
     home: string;
     catalog: string;
+    accessories: string;
     story: string;
     instagram: string;
     shop: string;
@@ -68,6 +69,8 @@ export interface Dictionary {
   };
   catalog: {
     heading: string;
+    /** Filter pills, card eyebrow and the /catalog/<category> page heading. */
+    categories: Record<CategoryId, string>;
     filterAll: string;
     empty: string;
     itemCount: string;

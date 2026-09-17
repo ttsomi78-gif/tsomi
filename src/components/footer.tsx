@@ -49,6 +49,12 @@ export function Footer({ locale, dict }: { locale: LocaleId; dict: Dictionary })
               {dict.footer.catalog}
             </Link>
             <Link
+              href={`/${locale}/catalog/accessories`}
+              className="w-fit text-cream/70 transition-colors hover:text-yolk"
+            >
+              {dict.nav.accessories}
+            </Link>
+            <Link
               href={`/${locale}/history`}
               className="w-fit text-cream/70 transition-colors hover:text-yolk"
             >

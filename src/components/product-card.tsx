@@ -30,7 +30,9 @@ export function ProductCard({
 }) {
   const soldOut = product.stock <= 0;
   const lowStock = !soldOut && product.stock <= LOW_STOCK_THRESHOLD;
-  const categoryLabel = categories.find((c) => c.id === product.category)?.label;
+  const categoryLabel =
+    dict?.catalog.categories[product.category] ??
+    categories.find((c) => c.id === product.category)?.label;
   const colors = productColors(product.variants);
 
   // Cover first, then the gallery (all colors), deduped — the card flips

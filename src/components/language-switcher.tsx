@@ -18,7 +18,7 @@ export function LanguageSwitcher({
 
   function switchTo(next: LocaleId) {
     if (next === locale) return;
-    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`;
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
     const rest = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "");
     router.push(`/${next}${rest}`);
     router.refresh();

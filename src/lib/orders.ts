@@ -292,6 +292,20 @@ export async function settleOrder(
     return existing;
   }
 
+  // The bank signs every merchant's callbacks with the same key, so a valid
+  // signature only proves "BOG sent this" — not that it is about OUR payment
+  // session. Anyone with a BOG merchant account could pay themselves for an
+  // order carrying our `external_order_id` and replay the callback here. The
+  // BOG order id we stored at checkout is the one thing they can't forge.
+  if (!existing.bogOrderId || body.order_id !== existing.bogOrderId) {
+    console.error(
+      "[bog] ignoring callback whose order_id does not match order",
+      orderId,
+      body.order_id,
+    );
+    return existing;
+  }
+
   const mapped = mapBogStatus(body.order_status?.key);
   if (mapped === "pending") return existing;
 
@@ -400,13 +414,22 @@ export async function settleOrder(
  * the customer returning from BOG is itself the trigger.
  */
 export async function reconcileOrder(order: OrderRow): Promise<OrderRow> {
-  if (order.status !== "pending") return order;
+  // `expired` is only our guess that the customer walked away. A payment made
+  // in the last minute of the session whose callback got lost would otherwise
+  // sit "expired" forever while the customer had in fact been charged — so an
+  // expired order with a BOG session is still worth one question to the bank.
+  if (order.status !== "pending" && order.status !== "expired") return order;
 
   if (order.bogOrderId) {
     try {
       const body = await fetchBogOrder(order.bogOrderId);
       if (body) {
-        const settled = await settleOrder(order.id, body);
+        const settled = await settleOrder(order.id, {
+          ...body,
+          // The receipt was fetched by our stored id, so it is the authority
+          // even if the bank's receipt body omits the field.
+          order_id: body.order_id ?? order.bogOrderId,
+        });
         if (settled) return settled;
       }
     } catch (error) {
@@ -416,7 +439,7 @@ export async function reconcileOrder(order: OrderRow): Promise<OrderRow> {
     }
   }
 
-  if (order.expiresAt.getTime() < Date.now()) {
+  if (order.status === "pending" && order.expiresAt.getTime() < Date.now()) {
     const [expired] = await db
       .update(orders)
       .set({

@@ -12,8 +12,9 @@ import { requireAdminSession } from "@/lib/session";
 import { uploadProductImage, deleteProductImageByUrl } from "@/lib/storage";
 import { gelToTetri } from "@/lib/money";
 import { slugify } from "@/lib/slug";
-import { locales } from "@/lib/products";
+import { categoryIds } from "@/lib/products";
 import { paletteColor } from "@/lib/colors";
+import { revalidateStorefront } from "@/lib/revalidate";
 
 const optionalText = z
   .string()
@@ -26,7 +27,7 @@ const productSchema = z.object({
   nameRu: optionalText,
   nameKa: optionalText,
   nameJa: optionalText,
-  category: z.enum(["tees", "bags"]),
+  category: z.enum(categoryIds),
   price: z.coerce.number().positive("Price must be greater than 0"),
   altEn: z.string().trim().min(1, "English alt text is required"),
   altRu: optionalText,
@@ -42,12 +43,7 @@ const productSchema = z.object({
 export type ProductFormState = { error?: string } | undefined;
 
 function revalidatePublicPages() {
-  // The public pages live under /[locale], so "/" and "/catalog" alone
-  // would never match — every locale has to be revalidated explicitly.
-  for (const locale of locales) {
-    revalidatePath(`/${locale}`);
-    revalidatePath(`/${locale}/catalog`);
-  }
+  revalidateStorefront();
   revalidatePath("/admin/products");
 }
 
@@ -95,7 +91,7 @@ const newProductSchema = z.object({
   tagRu: optionalText,
   tagKa: optionalText,
   tagJa: optionalText,
-  category: z.enum(["tees", "bags"]),
+  category: z.enum(categoryIds),
   price: z.coerce.number().positive("Price must be greater than 0"),
   colors: z.array(newColorSchema).min(1, "Add at least one color").max(12),
 });

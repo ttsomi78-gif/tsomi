@@ -4,6 +4,7 @@ const dictionary: Dictionary = {
   nav: {
     home: "მთავარი",
     catalog: "კატალოგი",
+    accessories: "აქსესუარები",
     story: "ისტორია",
     instagram: "Instagram",
     shop: "მაღაზია",
@@ -128,6 +129,7 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "კატალოგი",
+    categories: { tees: "მაისურები", bags: "ჩანთები", accessories: "აქსესუარები" },
     filterAll: "ყველა",
     empty: "აქ ჯერ არაფერია — შემოგვიარე მალე.",
     itemCount: "{count} ერთეული",

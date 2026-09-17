@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getOrderStats, getProductStats } from "@/db/queries";
 import { formatGel, tetriToGel } from "@/lib/money";
+import { categories } from "@/lib/products";
 
 function StatCard({
   label,
@@ -49,12 +50,18 @@ export default async function AdminDashboardPage() {
       </div>
 
       <h2 className="mt-8 text-[13px] font-semibold text-gray-500">Catalog</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <StatCard label="Total products" value={stats.total} accent="text-gray-900" />
         <StatCard label="Active" value={stats.active} accent="text-emerald-600" />
         <StatCard label="Hidden" value={stats.hidden} accent="text-gray-400" />
-        <StatCard label="Tees" value={stats.tees} accent="text-gray-900" />
-        <StatCard label="Bags" value={stats.bags} accent="text-amber-600" />
+        {categories.map((category) => (
+          <StatCard
+            key={category.id}
+            label={category.label}
+            value={stats.byCategory[category.id]}
+            accent="text-gray-900"
+          />
+        ))}
       </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

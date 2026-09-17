@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { locales } from "@/i18n/config";
 import { getActiveProducts } from "@/db/queries";
+import { categoryIds } from "@/lib/products";
 import { getSiteUrl } from "@/lib/site";
 
 // Rendered per request so SITE_URL is read from the runtime environment,
@@ -29,6 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: locale === "en" ? 0.9 : 0.7,
     },
+    ...categoryIds.map((category) => ({
+      url: `${siteUrl}/${locale}/catalog/${category}`,
+      changeFrequency: "weekly" as const,
+      priority: locale === "en" ? 0.8 : 0.6,
+    })),
     {
       url: `${siteUrl}/${locale}/history`,
       changeFrequency: "monthly" as const,

@@ -10,6 +10,7 @@ export function Header({ locale, dict }: { locale: LocaleId; dict: Dictionary })
   const nav = [
     { label: dict.nav.home, href: `/${locale}` },
     { label: dict.nav.catalog, href: `/${locale}/catalog` },
+    { label: dict.nav.accessories, href: `/${locale}/catalog/accessories` },
     { label: dict.nav.story, href: `/${locale}/history` },
   ];
 

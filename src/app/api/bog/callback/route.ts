@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { verifyBogSignature, type BogOrderBody } from "@/lib/bog";
 import { getOrderByBogId, settleOrder } from "@/lib/orders";
-import { locales } from "@/lib/products";
+import { revalidateStorefront } from "@/lib/revalidate";
 
 // node:crypto signature verification needs the Node runtime, and a webhook must
 // never be served from a cache.
@@ -66,13 +65,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
-  // Stock moved, so the cached catalog is now stale.
-  if (settled.status === "paid") {
-    for (const locale of locales) {
-      revalidatePath(`/${locale}`);
-      revalidatePath(`/${locale}/catalog`);
-    }
-  }
+  // Stock moved, so every cached catalog and product page is now stale.
+  if (settled.status === "paid") revalidateStorefront();
 
   return NextResponse.json({ ok: true, status: settled.status });
 }

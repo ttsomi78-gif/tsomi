@@ -14,7 +14,9 @@ import {
 } from "./schema";
 import { tetriToGel } from "@/lib/money";
 import {
+  categoryIds,
   resolveLocalized,
+  type CategoryId,
   type LocaleId,
   type Product,
   type ProductImage,
@@ -184,12 +186,15 @@ export async function getProductStats() {
     .select({ category: products.category, isActive: products.isActive })
     .from(products);
 
+  const byCategory = Object.fromEntries(
+    categoryIds.map((id) => [id, rows.filter((r) => r.category === id).length]),
+  ) as Record<CategoryId, number>;
+
   return {
     total: rows.length,
     active: rows.filter((r) => r.isActive).length,
     hidden: rows.filter((r) => !r.isActive).length,
-    tees: rows.filter((r) => r.category === "tees").length,
-    bags: rows.filter((r) => r.category === "bags").length,
+    byCategory,
   };
 }
 

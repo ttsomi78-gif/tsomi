@@ -12,8 +12,11 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
       disabled={pending}
       onClick={() => {
         if (window.confirm(`Delete "${name}"? This can't be undone.`)) {
-          startTransition(() => {
-            deleteProduct(id);
+          // Awaited so `pending` holds until the row is really gone — a void
+          // callback flipped it back instantly, and a second click could fire
+          // a second delete.
+          startTransition(async () => {
+            await deleteProduct(id);
           });
         }
       }}

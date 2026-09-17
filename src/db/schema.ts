@@ -10,7 +10,9 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 
-export const categoryEnum = pgEnum("category", ["tees", "bags"]);
+// Keep in sync with `categoryIds` in `@/lib/products` — adding a value here
+// needs an `ALTER TYPE ... ADD VALUE` migration (drizzle-kit generates it).
+export const categoryEnum = pgEnum("category", ["tees", "bags", "accessories"]);
 
 export const products = pgTable("products", {
   id: text("id").primaryKey(),

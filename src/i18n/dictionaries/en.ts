@@ -4,6 +4,7 @@ const dictionary: Dictionary = {
   nav: {
     home: "Home",
     catalog: "Catalog",
+    accessories: "Accessories",
     story: "Story",
     instagram: "Instagram",
     shop: "Shop now",
@@ -128,6 +129,7 @@ const dictionary: Dictionary = {
   },
   catalog: {
     heading: "The Catalog",
+    categories: { tees: "Tees", bags: "Bags", accessories: "Accessories" },
     filterAll: "All",
     empty: "Nothing here yet — check back soon.",
     itemCount: "{count} styles",

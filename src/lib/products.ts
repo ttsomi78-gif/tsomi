@@ -1,9 +1,17 @@
-export type CategoryId = "tees" | "bags";
+/** Mirrors the `category` Postgres enum in `@/db/schema` — same values, same order. */
+export const categoryIds = ["tees", "bags", "accessories"] as const;
+export type CategoryId = (typeof categoryIds)[number];
 
+/** English labels — the admin UI; the storefront uses `dict.catalog.categories`. */
 export const categories: { id: CategoryId; label: string }[] = [
   { id: "tees", label: "Tees" },
   { id: "bags", label: "Bags" },
+  { id: "accessories", label: "Accessories" },
 ];
+
+export function isCategoryId(value: string): value is CategoryId {
+  return (categoryIds as readonly string[]).includes(value);
+}
 
 export const locales = ["en", "ru", "ka", "ja"] as const;
 export type LocaleId = (typeof locales)[number];
