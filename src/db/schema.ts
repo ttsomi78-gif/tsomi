@@ -35,6 +35,14 @@ export const products = pgTable("products", {
   tagKa: text("tag_ka"),
   tagJa: text("tag_ja"),
 
+  // Free-text story shown on the product page under the price. Optional in
+  // every language (falls back like the rest) — `alt` stays the short image
+  // caption for screen readers and search, this is the copy customers read.
+  descriptionEn: text("description_en"),
+  descriptionRu: text("description_ru"),
+  descriptionKa: text("description_ka"),
+  descriptionJa: text("description_ja"),
+
   category: categoryEnum("category").notNull(),
   priceTetri: integer("price_tetri").notNull(),
   imageUrl: text("image_url").notNull(),

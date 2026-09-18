@@ -47,6 +47,15 @@ function toProduct(
     { en: row.tagEn, ru: row.tagRu, ka: row.tagKa, ja: row.tagJa },
     locale,
   );
+  const description = resolveLocalized(
+    {
+      en: row.descriptionEn,
+      ru: row.descriptionRu,
+      ka: row.descriptionKa,
+      ja: row.descriptionJa,
+    },
+    locale,
+  );
   return {
     id: row.id,
     name: resolveLocalized(
@@ -63,6 +72,7 @@ function toProduct(
       locale,
     ),
     tag: tag || undefined,
+    description: description || undefined,
     stock: row.stock,
     variants,
     images,

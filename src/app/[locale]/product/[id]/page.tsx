@@ -29,19 +29,31 @@ export async function generateMetadata({
   );
   languages["x-default"] = `${siteUrl}/en${path}`;
 
+  // The story is the better search snippet when it exists; the alt caption
+  // is the fallback. Either way, keep it to one snippet's worth.
+  const description = metaSnippet(product.description || product.alt);
+
   return {
     title: product.name,
-    description: product.alt,
+    description,
     alternates: { canonical: `${siteUrl}/${locale}${path}`, languages },
     openGraph: {
       type: "website",
       siteName: "TSOMI",
       title: `${product.name} — TSOMI`,
-      description: product.alt,
+      description,
       url: `${siteUrl}/${locale}${path}`,
       images: [{ url: product.image, alt: product.alt }],
     },
   };
+}
+
+/** First ~160 characters on a word boundary — what search engines show. */
+function metaSnippet(text: string): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  if (flat.length <= 160) return flat;
+  const cut = flat.slice(0, 157);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 100))}…`;
 }
 
 /** Product rich-result data: price in GEL, live availability, brand. */
@@ -57,7 +69,7 @@ function structuredData(
     image: [product.image, ...product.images.map((image) => image.url)].map(
       (url) => `${siteUrl}${url}`,
     ),
-    description: product.alt,
+    description: metaSnippet(product.description || product.alt),
     brand: { "@type": "Brand", name: "TSOMI" },
     offers: {
       "@type": "Offer",

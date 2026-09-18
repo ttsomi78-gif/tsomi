@@ -214,10 +214,21 @@ export function ProductView({
         <h1 className="font-display text-3xl uppercase leading-tight tracking-wide sm:text-4xl">
           {product.name}
         </h1>
-        <p className="font-georgian mt-1 text-ink/45">{product.georgian}</p>
+        {/* The Georgian name is a second line only when it adds something —
+            on the Georgian site (or with no Georgian name at all) it would
+            just repeat the heading. */}
+        {product.georgian !== product.name && (
+          <p className="font-georgian mt-1 text-ink/45">{product.georgian}</p>
+        )}
         <p className="mt-4 font-display text-2xl text-terracotta">
           {formatGel(product.price)} ₾
         </p>
+
+        {product.description && (
+          <p className="mt-5 whitespace-pre-line text-[15px] leading-relaxed text-ink/70">
+            {product.description}
+          </p>
+        )}
 
         {hasColors && (
           <div className="mt-7">

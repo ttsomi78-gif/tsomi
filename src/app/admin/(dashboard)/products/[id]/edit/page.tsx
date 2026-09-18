@@ -79,6 +79,10 @@ export default async function EditProductPage({
           tagRu: row.tagRu,
           tagKa: row.tagKa,
           tagJa: row.tagJa,
+          descriptionEn: row.descriptionEn,
+          descriptionRu: row.descriptionRu,
+          descriptionKa: row.descriptionKa,
+          descriptionJa: row.descriptionJa,
           stock: row.stock,
         }}
       />

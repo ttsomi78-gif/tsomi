@@ -29,6 +29,10 @@ export type EditableProduct = {
   tagRu: string | null;
   tagKa: string | null;
   tagJa: string | null;
+  descriptionEn: string | null;
+  descriptionRu: string | null;
+  descriptionKa: string | null;
+  descriptionJa: string | null;
   stock: number;
 };
 
@@ -48,6 +52,14 @@ export function ProductForm({
   const [activeLocale, setActiveLocale] = useState<LocaleId>("en");
   const formRef = useRef<HTMLFormElement>(null);
   const [revealInvalid, setRevealInvalid] = useState(false);
+  // Names are controlled so the "shown on the site as" strip below can show
+  // the effective name per language while the admin types.
+  const [names, setNames] = useState<Record<LocaleId, string>>({
+    en: product.nameEn,
+    ru: product.nameRu ?? "",
+    ka: product.nameKa ?? "",
+    ja: product.nameJa ?? "",
+  });
 
   // A required field inside a hidden locale panel can't be focused by the
   // browser, which silently blocks submission. When that happens, switch to
@@ -149,25 +161,39 @@ export function ProductForm({
       <section className="space-y-5">
         <SectionHeading
           title="Product copy"
-          description="English is required. Leave other languages blank to fall back to English automatically."
+          description="One tab per language. English is required; a language left blank shows the English text on that version of the site."
         />
 
         <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
-          {locales.map((locale) => (
-            <button
-              key={locale}
-              type="button"
-              onClick={() => setActiveLocale(locale)}
-              className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                activeLocale === locale
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              {localeLabels[locale]}
-              {locale === "en" && <span className="ml-1 text-red-500">*</span>}
-            </button>
-          ))}
+          {locales.map((locale) => {
+            const own = names[locale].trim().length > 0;
+            return (
+              <button
+                key={locale}
+                type="button"
+                onClick={() => setActiveLocale(locale)}
+                className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                  activeLocale === locale
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                {localeLabels[locale]}
+                {locale === "en" ? (
+                  <span className="ml-1 text-red-500">*</span>
+                ) : (
+                  /* Green: has its own name. Gray: shows the English one. */
+                  <span
+                    aria-hidden="true"
+                    title={own ? "Has its own name" : "Shows the English name"}
+                    className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${
+                      own ? "bg-emerald-500" : "bg-gray-300"
+                    }`}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {locales.map((locale) => (
@@ -179,14 +205,48 @@ export function ProductForm({
             <Field label={`Name${locale === "en" ? "" : " (optional)"}`}>
               <input
                 name={`name${capitalize(locale)}`}
-                defaultValue={localizedValue(product, "name", locale) ?? undefined}
+                value={names[locale]}
+                onChange={(event) =>
+                  setNames((current) => ({ ...current, [locale]: event.target.value }))
+                }
                 required={locale === "en"}
                 className={inputClass}
                 lang={locale}
               />
             </Field>
+            {locale !== "en" && !names[locale].trim() && (
+              <p className="-mt-2 text-xs text-gray-400">
+                Blank — the {localeLabels[locale]} site shows the English name
+                {names.en.trim() ? ` “${names.en.trim()}”` : ""}.
+              </p>
+            )}
 
-            <Field label={`Alt text (for accessibility)${locale === "en" ? "" : " (optional)"}`}>
+            <Field
+              label={`Description — shown on the product page${locale === "en" ? "" : " (optional)"}`}
+            >
+              <textarea
+                name={`description${capitalize(locale)}`}
+                defaultValue={localizedValue(product, "description", locale) ?? undefined}
+                rows={5}
+                maxLength={5000}
+                placeholder="The story behind this piece, the fabric, the fit… Line breaks are kept."
+                className={`${inputClass} min-h-28 resize-y`}
+                lang={locale}
+              />
+            </Field>
+
+            <Field label="Tag (optional — short badge on the photo, e.g. New, Best seller)">
+              <input
+                name={`tag${capitalize(locale)}`}
+                defaultValue={localizedValue(product, "tag", locale) ?? undefined}
+                className={inputClass}
+                lang={locale}
+              />
+            </Field>
+
+            <Field
+              label={`Image alt text${locale === "en" ? "" : " (optional)"} — for screen readers and Google, never shown on the page`}
+            >
               <input
                 name={`alt${capitalize(locale)}`}
                 defaultValue={localizedValue(product, "alt", locale) ?? undefined}
@@ -195,17 +255,32 @@ export function ProductForm({
                 lang={locale}
               />
             </Field>
-
-            <Field label="Tag (optional — e.g. New, Best seller)">
-              <input
-                name={`tag${capitalize(locale)}`}
-                defaultValue={localizedValue(product, "tag", locale) ?? undefined}
-                className={inputClass}
-                lang={locale}
-              />
-            </Field>
           </div>
         ))}
+
+        {/* The effective name per language — answers "I changed the name and
+            the site didn't change" (it was changed in a different tab). */}
+        <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            Name shown on each version of the site
+          </p>
+          <dl className="grid gap-1 sm:grid-cols-2">
+            {locales.map((locale) => {
+              const own = names[locale].trim();
+              return (
+                <div key={locale} className="flex items-baseline gap-2">
+                  <dt className="w-16 shrink-0 text-gray-500">{localeLabels[locale]}</dt>
+                  <dd className="truncate font-medium text-gray-900">
+                    {own || names.en.trim() || "—"}
+                    {!own && locale !== "en" && (
+                      <span className="ml-1 font-normal text-gray-400">(English)</span>
+                    )}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
       </section>
 
       {/* No photo fields here on purpose: photos live in the color cards
@@ -226,7 +301,7 @@ export function ProductForm({
 
 function localizedValue(
   product: EditableProduct | undefined,
-  field: "name" | "alt" | "tag",
+  field: "name" | "alt" | "tag" | "description",
   locale: LocaleId,
 ): string | null | undefined {
   if (!product) return undefined;

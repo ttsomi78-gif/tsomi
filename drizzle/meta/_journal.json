@@ -36,6 +36,13 @@
       "when": 1789633500820,
       "tag": "0004_accessories_category",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789637152209,
+      "tag": "0005_product_descriptions",
+      "breakpoints": true
     }
   ]
 }

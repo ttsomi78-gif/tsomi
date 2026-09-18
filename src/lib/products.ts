@@ -62,6 +62,8 @@ export type Product = {
   hoverImage?: string;
   alt: string;
   tag?: string;
+  /** Product-page story, already resolved to the locale (or English). */
+  description?: string;
   /** units currently available to sell — the variant total when variants exist */
   stock: number;
   /** Empty array = no variants: flat stock, no picker. */

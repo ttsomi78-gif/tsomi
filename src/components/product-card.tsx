@@ -155,9 +155,13 @@ export function ProductCard({
               </p>
             )}
             <h3 className="mt-1 font-bold leading-tight">{product.name}</h3>
-            <p className="font-georgian mt-0.5 text-sm text-ink/45">
-              {product.georgian}
-            </p>
+            {/* Skipped when it would only repeat the name (Georgian site, or
+                no Georgian name given) — "Keychain / Keychain" looked broken. */}
+            {product.georgian !== product.name && (
+              <p className="font-georgian mt-0.5 text-sm text-ink/45">
+                {product.georgian}
+              </p>
+            )}
             {(colors.length > 0 || sizesInStock.length > 0) && (
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 {colors.length > 0 && (

@@ -22,6 +22,18 @@ const optionalText = z
   .optional()
   .transform((value) => (value ? value : undefined));
 
+/**
+ * Multi-paragraph copy — same blank→undefined rule, just a bigger ceiling.
+ * Browsers submit textarea line breaks as CRLF; stored as plain LF so the
+ * text is the same whichever way it was entered.
+ */
+const optionalLongText = z
+  .string()
+  .transform((value) => value.replace(/\r\n?/g, "\n").trim())
+  .pipe(z.string().max(5000, "Description is too long (5000 characters max)"))
+  .optional()
+  .transform((value) => (value ? value : undefined));
+
 const productSchema = z.object({
   nameEn: z.string().trim().min(1, "English name is required"),
   nameRu: optionalText,
@@ -37,6 +49,10 @@ const productSchema = z.object({
   tagRu: optionalText,
   tagKa: optionalText,
   tagJa: optionalText,
+  descriptionEn: optionalLongText,
+  descriptionRu: optionalLongText,
+  descriptionKa: optionalLongText,
+  descriptionJa: optionalLongText,
   stock: z.coerce.number().int("Stock must be a whole number").min(0, "Stock can't be negative"),
 });
 
@@ -91,6 +107,10 @@ const newProductSchema = z.object({
   tagRu: optionalText,
   tagKa: optionalText,
   tagJa: optionalText,
+  descriptionEn: optionalLongText,
+  descriptionRu: optionalLongText,
+  descriptionKa: optionalLongText,
+  descriptionJa: optionalLongText,
   category: z.enum(categoryIds),
   price: z.coerce.number().positive("Price must be greater than 0"),
   colors: z.array(newColorSchema).min(1, "Add at least one color").max(12),
@@ -195,6 +215,10 @@ export async function createProductWithColors(
         tagRu: parsed.tagRu ?? null,
         tagKa: parsed.tagKa ?? null,
         tagJa: parsed.tagJa ?? null,
+        descriptionEn: parsed.descriptionEn ?? null,
+        descriptionRu: parsed.descriptionRu ?? null,
+        descriptionKa: parsed.descriptionKa ?? null,
+        descriptionJa: parsed.descriptionJa ?? null,
         stock: totalStock,
       });
 
@@ -257,6 +281,7 @@ export async function updateProduct(
     category, price,
     altEn, altRu, altKa, altJa,
     tagEn, tagRu, tagKa, tagJa,
+    descriptionEn, descriptionRu, descriptionKa, descriptionJa,
     stock,
   } = parsed.data;
 
@@ -278,6 +303,10 @@ export async function updateProduct(
       priceTetri: gelToTetri(price),
       altEn, altRu: altRu ?? null, altKa: altKa ?? null, altJa: altJa ?? null,
       tagEn: tagEn ?? null, tagRu: tagRu ?? null, tagKa: tagKa ?? null, tagJa: tagJa ?? null,
+      descriptionEn: descriptionEn ?? null,
+      descriptionRu: descriptionRu ?? null,
+      descriptionKa: descriptionKa ?? null,
+      descriptionJa: descriptionJa ?? null,
       ...(hasVariants ? {} : { stock }),
       updatedAt: new Date(),
     })

@@ -213,6 +213,19 @@ export function NewProductForm() {
                   className={inputClass}
                 />
               </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
+                  Description (optional — shown on the product page)
+                </span>
+                <textarea
+                  name={`description${FIELD_SUFFIX[locale.id]}`}
+                  rows={4}
+                  maxLength={5000}
+                  lang={locale.id}
+                  placeholder="The story behind this piece, the fabric, the fit… Line breaks are kept."
+                  className={`${inputClass} min-h-24 resize-y`}
+                />
+              </label>
             </div>
           ))}
         </div>
