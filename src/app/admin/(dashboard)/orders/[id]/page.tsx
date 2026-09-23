@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { colorLabel } from "@/lib/colors";
+import { countryName } from "@/lib/shipping";
 import { getOrderWithItems } from "@/db/queries";
 import type { OrderStatus } from "@/db/schema";
 
@@ -67,6 +68,13 @@ export default async function AdminOrderDetailPage({
         </Panel>
 
         <Panel title="Delivery">
+          <Row
+            label="Country"
+            value={`${countryName(order.shippingCountry, "en")} (${order.shippingCountry})`}
+          />
+          {order.shippingPostalCode && (
+            <Row label="Postal code" value={order.shippingPostalCode} />
+          )}
           <Row label="City" value={order.shippingCity} />
           <Row label="Address" value={order.shippingAddress} />
           {order.shippingNote && <Row label="Note" value={order.shippingNote} />}

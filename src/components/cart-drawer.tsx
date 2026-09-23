@@ -8,17 +8,19 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/components/cart-provider";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { colorHexOf, colorLabel } from "@/lib/colors";
+import { deliveryAmountLabel, deliveryZonesLine } from "@/lib/delivery-copy";
+import type { ShippingRates } from "@/lib/shipping";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
 
 export function CartDrawer({
   locale,
   dict,
-  deliveryTetri,
+  rates,
 }: {
   locale: LocaleId;
   dict: Dictionary;
-  deliveryTetri: number;
+  rates: ShippingRates;
 }) {
   const { items, subtotal, isOpen, closeCart, remove, setQuantity, keyOf } =
     useCart();
@@ -40,7 +42,9 @@ export function CartDrawer({
   // stacking context.
   if (typeof document === "undefined") return null;
 
-  const delivery = tetriToGel(deliveryTetri);
+  // The drawer doesn't know the destination yet, so it shows the home-market
+  // rate and names the others; checkout recomputes once a country is picked.
+  const delivery = tetriToGel(rates.georgia);
   const total = subtotal + delivery;
 
   return createPortal(
@@ -191,14 +195,12 @@ export function CartDrawer({
                         {formatGel(subtotal)} ₾
                       </dd>
                     </div>
-                    {delivery > 0 && (
-                      <div className="flex justify-between">
-                        <dt className="text-ink/55">{dict.cart.delivery}</dt>
-                        <dd className="font-semibold tabular-nums">
-                          {formatGel(delivery)} ₾
-                        </dd>
-                      </div>
-                    )}
+                    <div className="flex justify-between">
+                      <dt className="text-ink/55">{dict.cart.delivery}</dt>
+                      <dd className="font-semibold tabular-nums">
+                        {deliveryAmountLabel(rates.georgia, dict)}
+                      </dd>
+                    </div>
                     <div className="flex justify-between border-t border-tan/60 pt-2 text-base">
                       <dt className="font-bold">{dict.cart.total}</dt>
                       <dd className="font-display text-xl text-terracotta tabular-nums">
@@ -206,6 +208,9 @@ export function CartDrawer({
                       </dd>
                     </div>
                   </dl>
+                  <p className="mt-2 text-[11px] leading-relaxed text-ink/40">
+                    {deliveryZonesLine(rates, dict)}
+                  </p>
 
                   <Link
                     href={`/${locale}/checkout`}

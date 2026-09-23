@@ -107,7 +107,15 @@ export default async function AdminOrdersPage({
                         {order.customerEmail}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{order.shippingCity}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {order.shippingCity}
+                      {/* Abroad is the exception worth flagging in the list. */}
+                      {order.shippingCountry !== "GE" && (
+                        <span className="ml-1.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[11px] font-semibold text-blue-700">
+                          {order.shippingCountry}
+                        </span>
+                      )}
+                    </td>
                     <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums">
                       {formatGel(tetriToGel(order.totalTetri))} ₾
                     </td>

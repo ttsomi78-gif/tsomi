@@ -181,7 +181,16 @@ const dictionary: Dictionary = {
     paying: "Processing…",
     backToCart: "Back to cart",
     emptyCart: "Your cart is empty",
-    deliveryNote: "Flat {amount} ₾ delivery across Georgia",
+    country: "Country",
+    postalCode: "Postal code",
+    countryOther: "Another country…",
+    countryOtherNote:
+      "We don't ship there yet. Message us on Instagram ({handle}) and we'll work something out.",
+    deliveryFree: "Free",
+    deliveryGeorgia: "Delivery across Georgia: {amount}, usually 2–5 business days.",
+    deliveryIntl:
+      "International delivery: {amount} per order. Parcels leave once a week and arrive in about 2.5–3 weeks. Please give a phone number that works in the destination country.",
+    deliveryZones: "Delivery: Georgia {ge} · EU {eu} · USA {us}",
     securedBy: "Payment is processed securely by Bank of Georgia",
     required: "Please fill in every required field",
     errorEmpty: "Your cart is empty",

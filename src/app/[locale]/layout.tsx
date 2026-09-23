@@ -4,7 +4,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { CartProvider } from "@/components/cart-provider";
 import { CartDrawer } from "@/components/cart-drawer";
-import { getDeliveryFeeTetri } from "@/lib/orders";
+import { getShippingRates } from "@/lib/settings";
 
 // No generateStaticParams: the pages under /[locale] read the product catalog
 // from the database, which isn't reachable during `docker build`. With ISR
@@ -21,18 +21,14 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const dict = await getDictionary(locale);
+  const [dict, rates] = await Promise.all([getDictionary(locale), getShippingRates()]);
 
   return (
     <CartProvider>
       <HtmlLangSync locale={locale} />
       {children}
       {/* Lives in the layout so the drawer survives navigation between pages. */}
-      <CartDrawer
-        locale={locale}
-        dict={dict}
-        deliveryTetri={getDeliveryFeeTetri()}
-      />
+      <CartDrawer locale={locale} dict={dict} rates={rates} />
     </CartProvider>
   );
 }

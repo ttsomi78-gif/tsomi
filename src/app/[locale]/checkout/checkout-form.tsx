@@ -1,11 +1,20 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { colorLabel } from "@/lib/colors";
+import { company } from "@/lib/company";
+import { socialLinks } from "@/lib/social";
+import { deliveryAmountLabel as deliveryLabel } from "@/lib/delivery-copy";
+import {
+  OTHER_COUNTRY,
+  deliveryFeeTetri,
+  type CountryCode,
+  type ShippingRates,
+} from "@/lib/shipping";
 import { startCheckout, type CheckoutError } from "./actions";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LocaleId } from "@/lib/products";
@@ -32,16 +41,24 @@ function errorMessage(error: CheckoutError, dict: Dictionary): string {
 export function CheckoutForm({
   locale,
   dict,
-  deliveryTetri,
+  rates,
+  countries,
 }: {
   locale: LocaleId;
   dict: Dictionary;
-  deliveryTetri: number;
+  rates: ShippingRates;
+  countries: { code: CountryCode; name: string }[];
 }) {
   const { items, subtotal, hydrated, keyOf } = useCart();
   const [state, formAction, isPending] = useActionState(startCheckout, undefined);
+  const [country, setCountry] = useState<string>("GE");
 
-  const delivery = tetriToGel(deliveryTetri);
+  // The delivery line follows the country picker; null means "we don't ship
+  // there" and the Pay button locks. The server recomputes the same number
+  // from the same country, so this is display only.
+  const deliveryTetri = country === OTHER_COUNTRY ? null : deliveryFeeTetri(country, rates);
+  const abroad = country !== "GE" && deliveryTetri !== null;
+  const delivery = tetriToGel(deliveryTetri ?? 0);
   const total = subtotal + delivery;
 
   // Submitted by hand rather than through `<form action>`: React resets an
@@ -50,6 +67,7 @@ export function CheckoutForm({
   // the last unit sold out under a customer, or the bank was unreachable.
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (deliveryTetri === null) return;
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
     const formData = new FormData(form);
@@ -75,6 +93,8 @@ export function CheckoutForm({
       </div>
     );
   }
+
+  const otherNote = dict.checkout.countryOtherNote.split("{handle}");
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1fr_24rem]">
@@ -111,7 +131,7 @@ export function CheckoutForm({
               type="tel"
               label={dict.checkout.phone}
               autoComplete="tel"
-              placeholder="+995 5XX XXX XXX"
+              placeholder={abroad ? "+…" : "+995 5XX XXX XXX"}
               required
             />
           </div>
@@ -121,38 +141,99 @@ export function CheckoutForm({
           <legend className="mb-3 font-display text-xl uppercase tracking-wide">
             {dict.checkout.shippingHeading}
           </legend>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              name="city"
-              label={dict.checkout.city}
-              autoComplete="address-level2"
-              required
-              minLength={2}
-            />
-            <Field
-              name="address"
-              label={dict.checkout.address}
-              autoComplete="street-address"
-              required
-              minLength={5}
-            />
-          </div>
+
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
-              {dict.checkout.note}
+              {dict.checkout.country}
             </span>
-            <textarea
-              name="note"
-              rows={3}
-              maxLength={500}
-              placeholder={dict.checkout.notePlaceholder}
-              className="w-full rounded-2xl border-2 border-tan/60 bg-white/60 px-4 py-3 text-sm outline-none transition-colors placeholder:text-ink/30 focus:border-ink"
-            />
+            <select
+              name="country"
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
+              autoComplete="country"
+              className={`${fieldClass} appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2327211a%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m6 9 6 6 6-6%22/></svg>')] bg-[length:1rem] bg-[position:right_1rem_center] bg-no-repeat pr-10`}
+            >
+              {countries.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.name}
+                </option>
+              ))}
+              <option value={OTHER_COUNTRY}>{dict.checkout.countryOther}</option>
+            </select>
           </label>
-          {delivery > 0 && (
-            <p className="text-sm text-ink/45">
-              {dict.checkout.deliveryNote.replace("{amount}", formatGel(delivery))}
+
+          {deliveryTetri === null ? (
+            <p
+              role="alert"
+              className="rounded-2xl bg-gold/15 px-4 py-3 text-sm text-ink/70"
+            >
+              {otherNote[0]}
+              <a
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-ink underline decoration-2 underline-offset-2 hover:text-terracotta"
+              >
+                {company.instagram}
+              </a>
+              {otherNote[1]}
             </p>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  name="city"
+                  label={dict.checkout.city}
+                  autoComplete="address-level2"
+                  required
+                  minLength={2}
+                />
+                {abroad ? (
+                  <Field
+                    name="postalCode"
+                    label={dict.checkout.postalCode}
+                    autoComplete="postal-code"
+                    required
+                    maxLength={20}
+                  />
+                ) : (
+                  <Field
+                    name="address"
+                    label={dict.checkout.address}
+                    autoComplete="street-address"
+                    required
+                    minLength={5}
+                  />
+                )}
+              </div>
+              {abroad && (
+                <Field
+                  name="address"
+                  label={dict.checkout.address}
+                  autoComplete="street-address"
+                  required
+                  minLength={5}
+                />
+              )}
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
+                  {dict.checkout.note}
+                </span>
+                <textarea
+                  name="note"
+                  rows={3}
+                  maxLength={500}
+                  placeholder={dict.checkout.notePlaceholder}
+                  className="w-full rounded-2xl border-2 border-tan/60 bg-white/60 px-4 py-3 text-sm outline-none transition-colors placeholder:text-ink/30 focus:border-ink"
+                />
+              </label>
+              <p className="text-sm text-ink/45">
+                {(abroad ? dict.checkout.deliveryIntl : dict.checkout.deliveryGeorgia).replace(
+                  "{amount}",
+                  deliveryLabel(deliveryTetri, dict),
+                )}
+              </p>
+            </>
           )}
         </fieldset>
       </div>
@@ -197,12 +278,12 @@ export function CheckoutForm({
             <dt className="text-ink/55">{dict.cart.subtotal}</dt>
             <dd className="font-semibold tabular-nums">{formatGel(subtotal)} ₾</dd>
           </div>
-          {delivery > 0 && (
-            <div className="flex justify-between">
-              <dt className="text-ink/55">{dict.cart.delivery}</dt>
-              <dd className="font-semibold tabular-nums">{formatGel(delivery)} ₾</dd>
-            </div>
-          )}
+          <div className="flex justify-between">
+            <dt className="text-ink/55">{dict.cart.delivery}</dt>
+            <dd className="font-semibold tabular-nums">
+              {deliveryTetri === null ? "—" : deliveryLabel(deliveryTetri, dict)}
+            </dd>
+          </div>
           <div className="flex justify-between border-t border-tan/60 pt-2 text-base">
             <dt className="font-bold">{dict.cart.total}</dt>
             <dd className="font-display text-xl text-terracotta tabular-nums">
@@ -224,6 +305,7 @@ export function CheckoutForm({
           label={`${dict.checkout.pay} ${formatGel(total)} ₾`}
           pendingLabel={dict.checkout.paying}
           pending={isPending}
+          disabled={deliveryTetri === null}
         />
 
         <p className="mt-3 text-center text-[11px] leading-relaxed text-ink/40">
@@ -238,22 +320,27 @@ function SubmitButton({
   label,
   pendingLabel,
   pending,
+  disabled,
 }: {
   label: string;
   pendingLabel: string;
   /** From useActionState — useFormStatus only sees `<form action>` submits. */
   pending: boolean;
+  disabled: boolean;
 }) {
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className="flex w-full items-center justify-center rounded-full bg-ink px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-cream shadow-md shadow-ink/15 transition-all hover:bg-terracotta hover:shadow-terracotta/25 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
   );
 }
+
+const fieldClass =
+  "w-full rounded-full border-2 border-tan/60 bg-white/60 px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-ink/30 focus:border-ink";
 
 function Field({
   name,
@@ -270,12 +357,7 @@ function Field({
       <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink/55">
         {label}
       </span>
-      <input
-        name={name}
-        type={type}
-        {...rest}
-        className="w-full rounded-full border-2 border-tan/60 bg-white/60 px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-ink/30 focus:border-ink"
-      />
+      <input name={name} type={type} {...rest} className={fieldClass} />
     </label>
   );
 }

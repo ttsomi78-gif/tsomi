@@ -4,10 +4,11 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { CheckoutForm } from "./checkout-form";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { getDeliveryFeeTetri } from "@/lib/orders";
+import { getShippingRates } from "@/lib/settings";
+import { shippableCountryOptions } from "@/lib/shipping";
 import type { LocaleId } from "@/lib/products";
 
-// Never cached: the delivery fee is read from the environment at request time,
+// Never cached: the delivery rates come from the database at request time,
 // and a checkout page has no business being served from a shared cache.
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function CheckoutPage({
   params: Promise<{ locale: LocaleId }>;
 }) {
   const { locale } = await params;
-  const dict = await getDictionary(locale);
+  const [dict, rates] = await Promise.all([getDictionary(locale), getShippingRates()]);
 
   return (
     <>
@@ -54,7 +55,10 @@ export default async function CheckoutPage({
           <CheckoutForm
             locale={locale}
             dict={dict}
-            deliveryTetri={getDeliveryFeeTetri()}
+            rates={rates}
+            // Country names are localized on the server (ICU) so the select
+            // renders identically before and after hydration.
+            countries={shippableCountryOptions(locale)}
           />
         </section>
       </main>

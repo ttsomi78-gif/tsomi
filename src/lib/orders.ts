@@ -19,19 +19,11 @@ import {
   type BogOrderBody,
 } from "@/lib/bog";
 import { resolveLocalized, type LocaleId } from "@/lib/products";
-
-/** 5 ₾ unless DELIVERY_FEE_TETRI says otherwise. Georgia-wide flat rate. */
-const DEFAULT_DELIVERY_FEE_TETRI = 500;
+import { getShippingRates } from "@/lib/settings";
+import { deliveryFeeTetri } from "@/lib/shipping";
 
 /** Nobody legitimately orders 500 of one tee; this bounds a hostile cart payload. */
 const MAX_QUANTITY_PER_LINE = 20;
-
-export function getDeliveryFeeTetri(): number {
-  const raw = process.env.DELIVERY_FEE_TETRI;
-  if (!raw) return DEFAULT_DELIVERY_FEE_TETRI;
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : DEFAULT_DELIVERY_FEE_TETRI;
-}
 
 export type CartLine = {
   productId: string;
@@ -58,7 +50,7 @@ export type PricedCart = {
   totalTetri: number;
 };
 
-export type CartErrorCode = "empty" | "unavailable" | "out_of_stock";
+export type CartErrorCode = "empty" | "unavailable" | "out_of_stock" | "country";
 
 export class CartError extends Error {
   constructor(
@@ -80,11 +72,13 @@ export class CartError extends Error {
  * The client cart holds prices only so it can render a running total — none of
  * those numbers are trusted here. Every price, name and stock level is re-read
  * from `products`, so a tampered request can change *what* is bought but never
- * *what it costs*.
+ * *what it costs*. Delivery is likewise derived here from the destination
+ * country and the admin's zone rates, never taken from the form.
  */
 export async function priceCart(
   lines: CartLine[],
   locale: LocaleId,
+  country: string,
 ): Promise<PricedCart> {
   // Merge duplicate lines before validating, or two lines of 15 would each pass
   // a stock check of 20 while together exceeding it. Keyed by product+variant —
@@ -167,7 +161,10 @@ export async function priceCart(
   }
 
   const itemsTetri = priced.reduce((sum, line) => sum + line.totalTetri, 0);
-  const deliveryTetri = getDeliveryFeeTetri();
+  const deliveryTetri = deliveryFeeTetri(country, await getShippingRates());
+  if (deliveryTetri === null) {
+    throw new CartError("country", "We don't deliver to this country yet");
+  }
   return {
     lines: priced,
     itemsTetri,
@@ -180,6 +177,9 @@ export type CustomerDetails = {
   name: string;
   email: string;
   phone: string;
+  /** ISO 3166-1 alpha-2, already validated as a country we ship to. */
+  country: string;
+  postalCode?: string | null;
   city: string;
   address: string;
   note?: string | null;
@@ -214,6 +214,8 @@ export async function createPendingOrder(input: {
         shippingCity: input.customer.city,
         shippingAddress: input.customer.address,
         shippingNote: input.customer.note?.trim() || null,
+        shippingCountry: input.customer.country,
+        shippingPostalCode: input.customer.postalCode?.trim() || null,
         locale: input.locale,
         itemsTetri: input.cart.itemsTetri,
         deliveryTetri: input.cart.deliveryTetri,

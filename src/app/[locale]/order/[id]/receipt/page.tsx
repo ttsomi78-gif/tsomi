@@ -6,6 +6,7 @@ import { getOrderById, getOrderItems } from "@/lib/orders";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { colorLabel } from "@/lib/colors";
 import { company } from "@/lib/company";
+import { countryName } from "@/lib/shipping";
 import type { LocaleId } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
@@ -124,8 +125,12 @@ export default async function ReceiptPage({
             {order.customerName} · {order.customerPhone}
           </p>
           <p className="text-ink/60">
-            {order.shippingCity}, {order.shippingAddress}
+            {[order.shippingPostalCode, order.shippingCity].filter(Boolean).join(" ")},{" "}
+            {order.shippingAddress}
           </p>
+          {order.shippingCountry !== "GE" && (
+            <p className="text-ink/60">{countryName(order.shippingCountry, locale)}</p>
+          )}
         </div>
 
         <p className="mt-6 text-center text-xs text-ink/40 print:hidden">

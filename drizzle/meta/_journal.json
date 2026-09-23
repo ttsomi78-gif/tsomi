@@ -43,6 +43,13 @@
       "when": 1789637152209,
       "tag": "0005_product_descriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790160711607,
+      "tag": "0006_shipping_zones",
+      "breakpoints": true
     }
   ]
 }

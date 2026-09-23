@@ -1,12 +1,13 @@
 import { LegalPage, type LegalContent } from "@/components/legal-page";
-import { getDictionary } from "@/i18n/get-dictionary";
-import { getDeliveryFeeTetri } from "@/lib/orders";
-import { formatGel, tetriToGel } from "@/lib/money";
+import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
+import { getShippingRates } from "@/lib/settings";
+import { deliveryAmountLabel } from "@/lib/delivery-copy";
 import { company } from "@/lib/company";
 import { buildPageMetadata } from "@/lib/seo";
 import type { LocaleId } from "@/lib/products";
+import type { ShippingRates } from "@/lib/shipping";
 
-// The delivery fee is read from the environment at request time.
+// The delivery rates are read from the database at request time.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -18,20 +19,33 @@ export async function generateMetadata({
   return buildPageMetadata("shipping", locale, "/shipping");
 }
 
-const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => ({
+/** The three zone prices as the customer sees them: "10 ₾" or the free word. */
+type Labels = { ge: string; eu: string; us: string; geFree: boolean };
+
+const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent> => ({
   en: {
     title: "Delivery & Returns",
     intro: "Simple rules, no small print.",
-    updated: "Last updated: August 2026",
+    updated: "Last updated: September 2026",
     sections: [
       {
-        heading: "Delivery",
+        heading: "Delivery in Georgia",
         body: [
-          free
+          geFree
             ? "We deliver across Georgia — delivery is free."
-            : `We deliver across Georgia. The flat delivery fee is ${fee} ₾, added once per order at checkout.`,
+            : `We deliver across Georgia. Delivery is ${ge} per order, added once at checkout.`,
           `Orders are handed to the courier within 1–2 business days and typically arrive in ${company.deliveryDays} business days.`,
           "We'll contact you by phone to confirm the delivery time.",
+        ],
+      },
+      {
+        heading: "International delivery",
+        body: [
+          `We ship to every EU country for ${eu} per order and to the USA for ${us} per order. The price appears at checkout as soon as you pick your country.`,
+          "Parcels leave Tbilisi once a week and usually arrive in 2.5–3 weeks.",
+          "Please give a postal code and a phone number that works in the destination country — the courier needs both to deliver.",
+          "International parcels are insured by the courier for up to 30 €.",
+          `Somewhere else? Write to us on Instagram (${company.instagram}) and we'll find a way.`,
         ],
       },
       {
@@ -53,30 +67,40 @@ const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => 
   ka: {
     title: "მიწოდება და დაბრუნება",
     intro: "მარტივი წესები, წვრილი შრიფტის გარეშე.",
-    updated: "ბოლო განახლება: 2026 წლის აგვისტო",
+    updated: "ბოლო განახლება: 2026 წლის სექტემბერი",
     sections: [
       {
-        heading: "მიწოდება",
+        heading: "მიწოდება საქართველოში",
         body: [
-          free
-            ? "მიწოდება მოქმედებს მთელ საქართველოში — მიწოდება უფასოა."
-            : `მიწოდება მოქმედებს მთელ საქართველოში. მიწოდების ფასია ${fee} ₾ — ერთხელ ემატება შეკვეთას გადახდისას.`,
-          `შეკვეთას კურიერს გადავცემთ 1–2 სამუშაო დღეში; ჩაბარებას ჩვეულებრივ ${company.deliveryDays} სამუშაო დღე სჭირდება.`,
+          geFree
+            ? "მიწოდება მოქმედებს მთელ საქართველოში — უფასოდ."
+            : `მიწოდება მოქმედებს მთელ საქართველოში. მიწოდების ფასია ${ge} შეკვეთაზე და გადახდისას ერთხელ ემატება.`,
+          `შეკვეთას კურიერს 1–2 სამუშაო დღეში გადავცემთ; ჩაბარებას ჩვეულებრივ ${company.deliveryDays} სამუშაო დღე სჭირდება.`,
           "მიწოდების დროის დასაზუსტებლად ტელეფონით დაგიკავშირდებით.",
+        ],
+      },
+      {
+        heading: "საერთაშორისო მიწოდება",
+        body: [
+          `ვაგზავნით ევროკავშირის ყველა ქვეყანაში (${eu} შეკვეთაზე) და აშშ-ში (${us} შეკვეთაზე). ფასი ქვეყნის არჩევისთანავე გამოჩნდება გადახდის გვერდზე.`,
+          "ამანათები თბილისიდან კვირაში ერთხელ იგზავნება და ჩვეულებრივ 2,5–3 კვირაში ჩადის.",
+          "მიუთითეთ საფოსტო ინდექსი და ტელეფონის ნომერი, რომელიც დანიშნულების ქვეყანაში მუშაობს — კურიერს ჩასაბარებლად ორივე სჭირდება.",
+          "საერთაშორისო ამანათებს კურიერი 30 ევრომდე აზღვევს.",
+          `სხვა ქვეყანაში გჭირდებათ? მოგვწერეთ Instagram-ზე (${company.instagram}) და გზას ვიპოვით.`,
         ],
       },
       {
         heading: "დაბრუნება",
         body: [
-          `ნივთის დაბრუნება შეგიძლია მიღებიდან ${company.returnDays} დღის განმავლობაში — უტარებელი, გაურეცხავი, ეტიკეტებით.`,
-          `დაბრუნების დასაწყებად დაგვირეკე ან მოგვწერე Instagram-ზე (${company.instagram}). დანარჩენს ჩვენ მოვაგვარებთ.`,
+          `ნივთის დაბრუნება შეგიძლიათ მიღებიდან ${company.returnDays} დღის განმავლობაში — უტარებელი, გაურეცხავი, ეტიკეტებით.`,
+          `დაბრუნების დასაწყებად დაგვირეკეთ ან მოგვწერეთ Instagram-ზე (${company.instagram}). დანარჩენს ჩვენ მოვაგვარებთ.`,
           "ნივთის მიღების შემდეგ თანხას სრულად დაგიბრუნებთ ბარათზე 5 სამუშაო დღეში. მიწოდების საფასური ბრუნდება მაშინ, როცა შეცდომა ჩვენია (არასწორი ან დაზიანებული ნივთი).",
         ],
       },
       {
         heading: "დაზიანებული ან არასწორი ნივთი",
         body: [
-          "თუ ნივთი დაზიანებული მოვიდა ან ის არ არის, რაც შეუკვეთე — შენი არჩევანით ან შევცვლით, ან თანხას სრულად დაგიბრუნებთ, მიწოდების ჩათვლით.",
+          "თუ ნივთი დაზიანებული მოვიდა ან ის არ არის, რაც შეუკვეთეთ — თქვენი არჩევანით ან შევცვლით, ან თანხას სრულად დაგიბრუნებთ, მიწოდების ჩათვლით.",
         ],
       },
     ],
@@ -84,16 +108,26 @@ const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => 
   ru: {
     title: "Доставка и возврат",
     intro: "Простые правила, без мелкого шрифта.",
-    updated: "Последнее обновление: август 2026",
+    updated: "Последнее обновление: сентябрь 2026",
     sections: [
       {
-        heading: "Доставка",
+        heading: "Доставка по Грузии",
         body: [
-          free
+          geFree
             ? "Доставляем по всей Грузии — доставка бесплатная."
-            : `Доставляем по всей Грузии. Стоимость доставки — ${fee} ₾, добавляется один раз к заказу при оформлении.`,
+            : `Доставляем по всей Грузии. Стоимость доставки — ${ge} за заказ, добавляется один раз при оформлении.`,
           `Передаём заказ курьеру в течение 1–2 рабочих дней; доставка обычно занимает ${company.deliveryDays} рабочих дней.`,
           "Мы позвоним вам, чтобы согласовать время доставки.",
+        ],
+      },
+      {
+        heading: "Международная доставка",
+        body: [
+          `Отправляем во все страны ЕС (${eu} за заказ) и в США (${us} за заказ). Цена появится при оформлении, как только вы выберете страну.`,
+          "Посылки уходят из Тбилиси раз в неделю и обычно доходят за 2,5–3 недели.",
+          "Укажите почтовый индекс и номер телефона, который работает в стране назначения, — курьеру нужны оба.",
+          "Международные посылки застрахованы курьером на сумму до 30 €.",
+          `Нужна другая страна? Напишите нам в Instagram (${company.instagram}) — что-нибудь придумаем.`,
         ],
       },
       {
@@ -115,16 +149,26 @@ const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => 
   ja: {
     title: "配送と返品",
     intro: "シンプルなルール。小さな文字の注意書きはありません。",
-    updated: "最終更新：2026年8月",
+    updated: "最終更新：2026年9月",
     sections: [
       {
-        heading: "配送",
+        heading: "ジョージア国内配送",
         body: [
-          free
+          geFree
             ? "ジョージア全土に配送します。配送料は無料です。"
-            : `ジョージア全土に配送します。配送料は一律${fee} ₾で、ご注文時に一度だけ加算されます。`,
+            : `ジョージア全土に配送します。配送料は1注文あたり${ge}で、ご注文時に一度だけ加算されます。`,
           `ご注文は1〜2営業日以内に配送業者へ引き渡され、通常${company.deliveryDays}営業日でお届けします。`,
           "お届け時間の確認のため、お電話でご連絡いたします。",
+        ],
+      },
+      {
+        heading: "海外配送",
+        body: [
+          `EU加盟国全域（1注文あたり${eu}）とアメリカ（1注文あたり${us}）へ配送します。国を選ぶと、ご注文画面に送料が表示されます。`,
+          "荷物はトビリシから週1回発送され、通常2.5〜3週間で到着します。",
+          "郵便番号と、配送先の国で使える電話番号をご記入ください。配送業者のお届けに両方が必要です。",
+          "海外向けの荷物は配送業者により最大30€まで保険が掛けられます。",
+          `その他の国への配送は、Instagram（${company.instagram}）でご相談ください。`,
         ],
       },
       {
@@ -145,20 +189,23 @@ const content = (fee: string, free: boolean): Record<LocaleId, LegalContent> => 
   },
 });
 
+function labels(rates: ShippingRates, dict: Dictionary): Labels {
+  return {
+    ge: deliveryAmountLabel(rates.georgia, dict),
+    eu: deliveryAmountLabel(rates.eu, dict),
+    us: deliveryAmountLabel(rates.us, dict),
+    geFree: rates.georgia === 0,
+  };
+}
+
 export default async function ShippingPage({
   params,
 }: {
   params: Promise<{ locale: LocaleId }>;
 }) {
   const { locale } = await params;
-  const dict = await getDictionary(locale);
-  const feeTetri = getDeliveryFeeTetri();
-  const fee = formatGel(tetriToGel(feeTetri));
+  const [dict, rates] = await Promise.all([getDictionary(locale), getShippingRates()]);
   return (
-    <LegalPage
-      locale={locale}
-      dict={dict}
-      content={content(fee, feeTetri === 0)[locale]}
-    />
+    <LegalPage locale={locale} dict={dict} content={content(labels(rates, dict))[locale]} />
   );
 }

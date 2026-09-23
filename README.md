@@ -129,7 +129,7 @@ order.
 - Register `https://<your-domain>/api/bog/callback` with BOG as the callback URL.
 - Set `SITE_URL` to the real HTTPS origin — the callback and redirect URLs are
   built from it, so a wrong value silently breaks every payment.
-- Adjust `DELIVERY_FEE_TETRI` (in tetri; `500` = 5.00 ₾).
+- Delivery rates (Georgia / EU / USA, per order) are edited in the admin under Settings — no env var, no deploy.
 
 Local testing needs a public HTTPS tunnel to receive callbacks — without one,
 orders sit `pending` until the status page reconciles them.

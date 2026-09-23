@@ -6,8 +6,8 @@ import { Header } from "@/components/header";
 import { ProductView } from "./product-view";
 import { getActiveProductById } from "@/db/queries";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { getDeliveryFeeTetri } from "@/lib/orders";
-import { formatGel, tetriToGel } from "@/lib/money";
+import { getShippingRates } from "@/lib/settings";
+import { deliveryZonesLine } from "@/lib/delivery-copy";
 import { getSiteUrl } from "@/lib/site";
 import { locales, type LocaleId } from "@/lib/products";
 
@@ -90,18 +90,14 @@ export default async function ProductPage({
   params: Promise<{ locale: LocaleId; id: string }>;
 }) {
   const { locale, id } = await params;
-  const [product, dict] = await Promise.all([
+  const [product, dict, rates] = await Promise.all([
     getActiveProductById(id, locale),
     getDictionary(locale),
+    getShippingRates(),
   ]);
   if (!product) notFound();
 
-  const feeTetri = getDeliveryFeeTetri();
-  // Free delivery: no note at all beats "0 ₾ delivery".
-  const deliveryNote =
-    feeTetri > 0
-      ? dict.checkout.deliveryNote.replace("{amount}", formatGel(tetriToGel(feeTetri)))
-      : "";
+  const deliveryNote = deliveryZonesLine(rates, dict);
 
   return (
     <>

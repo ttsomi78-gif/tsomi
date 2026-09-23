@@ -122,7 +122,20 @@ export interface Dictionary {
     paying: string;
     backToCart: string;
     emptyCart: string;
-    deliveryNote: string;
+    country: string;
+    postalCode: string;
+    /** The last option of the country picker. */
+    countryOther: string;
+    /** Shown when that option is picked; {handle} → the Instagram handle. */
+    countryOtherNote: string;
+    /** Delivery-line value when the zone rate is 0. */
+    deliveryFree: string;
+    /** Under the address fields for Georgia; {amount} → "10 ₾" or the free word. */
+    deliveryGeorgia: string;
+    /** Under the address fields abroad; {amount} → the zone's per-order price. */
+    deliveryIntl: string;
+    /** One-line zone summary (product page, cart): {ge} {eu} {us} → amounts. */
+    deliveryZones: string;
     securedBy: string;
     required: string;
     errorEmpty: string;

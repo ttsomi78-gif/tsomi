@@ -12,6 +12,7 @@ import {
 } from "@/lib/orders";
 import { getSiteUrl } from "@/lib/site";
 import { colorLabel } from "@/lib/colors";
+import { isShippableCountry } from "@/lib/shipping";
 import { isLocale } from "@/i18n/config";
 import type { LocaleId } from "@/lib/products";
 
@@ -29,21 +30,31 @@ export type CheckoutState = { error: CheckoutError } | undefined;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_PATTERN = /^\+?[\d\s()-]{9,20}$/;
 
-const customerSchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .refine((value) => EMAIL_PATTERN.test(value)),
-  phone: z
-    .string()
-    .trim()
-    .refine((value) => PHONE_PATTERN.test(value)),
-  city: z.string().trim().min(2).max(80),
-  address: z.string().trim().min(5).max(300),
-  note: z.string().trim().max(500).optional(),
-});
+const customerSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .refine((value) => EMAIL_PATTERN.test(value)),
+    phone: z
+      .string()
+      .trim()
+      .refine((value) => PHONE_PATTERN.test(value)),
+    // Only countries with a delivery zone get past here — "OTHER" and any
+    // hand-edited code fail validation before a single price is computed.
+    country: z.string().trim().toUpperCase().refine(isShippableCountry),
+    postalCode: z.string().trim().max(20).optional(),
+    city: z.string().trim().min(2).max(80),
+    address: z.string().trim().min(5).max(300),
+    note: z.string().trim().max(500).optional(),
+  })
+  // The courier abroad won't take a parcel without a postal code; at home
+  // nobody has one to give.
+  .refine((value) => value.country === "GE" || !!value.postalCode, {
+    path: ["postalCode"],
+  });
 
 const cartSchema = z
   .array(
@@ -67,6 +78,8 @@ export async function startCheckout(
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
+    country: formData.get("country") ?? "GE",
+    postalCode: formData.get("postalCode") || undefined,
     city: formData.get("city"),
     address: formData.get("address"),
     note: formData.get("note") || undefined,
@@ -82,9 +95,10 @@ export async function startCheckout(
 
   let paymentUrl: string;
   try {
-    // Prices, names and stock all come from the database here — the submitted
-    // cart contributes product ids and quantities, nothing else.
-    const cart = await priceCart(lines, locale);
+    // Prices, names, stock and the delivery fee all come from the database
+    // here — the submitted cart contributes product ids and quantities, and
+    // the form contributes the destination country, nothing else.
+    const cart = await priceCart(lines, locale, customer.data.country);
     const order = await createPendingOrder({
       cart,
       customer: customer.data,
@@ -124,6 +138,7 @@ export async function startCheckout(
     if (error instanceof CartError) {
       if (error.code === "empty") return { error: { code: "empty" } };
       if (error.code === "unavailable") return { error: { code: "unavailable" } };
+      if (error.code === "country") return { error: { code: "invalid" } };
       const product = error.productName ?? "";
       return error.remaining && error.remaining > 0
         ? { error: { code: "stock", product, count: error.remaining } }

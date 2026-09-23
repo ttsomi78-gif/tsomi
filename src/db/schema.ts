@@ -148,6 +148,10 @@ export const orders = pgTable(
     shippingCity: text("shipping_city").notNull(),
     shippingAddress: text("shipping_address").notNull(),
     shippingNote: text("shipping_note"),
+    /** ISO 3166-1 alpha-2 — decides the delivery zone (see `@/lib/shipping`). */
+    shippingCountry: text("shipping_country").notNull().default("GE"),
+    /** Required by the courier abroad; Georgian addresses go without. */
+    shippingPostalCode: text("shipping_postal_code"),
 
     /** Language the order was placed in — the status page and any receipt use it. */
     locale: text("locale").notNull().default("en"),
@@ -220,6 +224,18 @@ export const orderItems = pgTable(
   },
   (table) => [index("order_items_order_idx").on(table.orderId)],
 );
+
+/**
+ * Admin-editable shop settings, one JSON document per key (e.g. "shipping"
+ * → the per-zone delivery rates). See `@/lib/settings` for the readers.
+ */
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 export type OrderRow = typeof orders.$inferSelect;
 export type NewOrderRow = typeof orders.$inferInsert;

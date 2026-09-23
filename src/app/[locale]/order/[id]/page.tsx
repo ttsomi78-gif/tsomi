@@ -8,6 +8,7 @@ import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
 import { getOrderById, getOrderItems, reconcileOrder } from "@/lib/orders";
 import { formatGel, tetriToGel } from "@/lib/money";
 import { colorLabel } from "@/lib/colors";
+import { countryName } from "@/lib/shipping";
 import type { OrderStatus } from "@/db/schema";
 import type { LocaleId } from "@/lib/products";
 
@@ -167,8 +168,13 @@ export default async function OrderPage({
               {order.customerName} · {order.customerPhone}
             </p>
             <p className="text-ink/60">
-              {order.shippingCity}, {order.shippingAddress}
+              {[order.shippingPostalCode, order.shippingCity].filter(Boolean).join(" ")},{" "}
+              {order.shippingAddress}
             </p>
+            {/* Home-market orders don't need "Georgia" spelled out. */}
+            {order.shippingCountry !== "GE" && (
+              <p className="text-ink/60">{countryName(order.shippingCountry, locale)}</p>
+            )}
           </div>
         </div>
 
