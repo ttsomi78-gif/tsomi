@@ -30,11 +30,16 @@ export async function getShippingRates(): Promise<ShippingRates> {
   // Each zone falls back on its own, so a rate added after the row was first
   // saved still gets its default rather than NaN.
   const rates = { ...DEFAULT_SHIPPING_RATES };
+  const valid = (value: unknown): value is number =>
+    typeof value === "number" && Number.isInteger(value) && value >= 0;
   for (const zone of SHIPPING_ZONES) {
     const value = stored[zone];
-    if (typeof value === "number" && Number.isInteger(value) && value >= 0) {
-      rates[zone] = value;
-    }
+    if (valid(value)) rates[zone] = value;
+  }
+  // A row saved when Europe was a single zone: its "eu" rate covers both tiers.
+  if (valid(stored.eu)) {
+    if (!valid(stored.euA)) rates.euA = stored.eu;
+    if (!valid(stored.euB)) rates.euB = stored.eu;
   }
   return rates;
 }

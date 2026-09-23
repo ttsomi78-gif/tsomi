@@ -132,9 +132,11 @@ export interface Dictionary {
     deliveryFree: string;
     /** Under the address fields for Georgia; {amount} → "10 ₾" or the free word. */
     deliveryGeorgia: string;
-    /** Under the address fields abroad; {amount} → the zone's per-order price. */
+    /** Under the address fields for the EU/USA; {amount} → the per-order price. */
     deliveryIntl: string;
-    /** One-line zone summary (product page, cart): {ge} {eu} {us} → amounts. */
+    /** Same for Russia/Kazakhstan/Kyrgyzstan, where transit time isn't promised. */
+    deliveryIntlOther: string;
+    /** One-line summary (product page, cart): {ge} → Georgia, {min} → cheapest abroad. */
     deliveryZones: string;
     securedBy: string;
     required: string;

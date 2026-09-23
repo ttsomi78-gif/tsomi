@@ -190,7 +190,9 @@ const dictionary: Dictionary = {
     deliveryGeorgia: "Delivery across Georgia: {amount}, usually 2–5 business days.",
     deliveryIntl:
       "International delivery: {amount} per order. Parcels leave once a week and arrive in about 2.5–3 weeks. Please give a phone number that works in the destination country.",
-    deliveryZones: "Delivery: Georgia {ge} · EU {eu} · USA {us}",
+    deliveryIntlOther:
+      "International delivery: {amount} per order. We'll confirm the delivery time when we contact you. Please give a phone number that works in the destination country.",
+    deliveryZones: "Delivery: Georgia {ge} · abroad from {min}, exact price at checkout",
     securedBy: "Payment is processed securely by Bank of Georgia",
     required: "Please fill in every required field",
     errorEmpty: "Your cart is empty",

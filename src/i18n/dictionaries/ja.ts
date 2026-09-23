@@ -190,7 +190,9 @@ const dictionary: Dictionary = {
     deliveryGeorgia: "ジョージア国内配送：{amount}、通常2〜5営業日でお届けします。",
     deliveryIntl:
       "海外配送：1注文あたり{amount}。発送は週1回、到着まで約2.5〜3週間です。配送先の国で使える電話番号をご記入ください。",
-    deliveryZones: "配送：ジョージア {ge} · EU {eu} · アメリカ {us}",
+    deliveryIntlOther:
+      "海外配送：1注文あたり{amount}。お届け日数はご連絡の際にお知らせします。配送先の国で使える電話番号をご記入ください。",
+    deliveryZones: "配送：ジョージア {ge} · 海外は{min}から、正確な送料はご注文時に表示",
     securedBy: "お支払いはジョージア銀行が安全に処理します",
     required: "必須項目をすべて入力してください",
     errorEmpty: "カートが空です",

@@ -5,7 +5,7 @@ import { deliveryAmountLabel } from "@/lib/delivery-copy";
 import { company } from "@/lib/company";
 import { buildPageMetadata } from "@/lib/seo";
 import type { LocaleId } from "@/lib/products";
-import type { ShippingRates } from "@/lib/shipping";
+import { ZONE_COUNTRIES, countryName, type ShippingRates } from "@/lib/shipping";
 
 // The delivery rates are read from the database at request time.
 export const dynamic = "force-dynamic";
@@ -19,10 +19,29 @@ export async function generateMetadata({
   return buildPageMetadata("shipping", locale, "/shipping");
 }
 
-/** The three zone prices as the customer sees them: "10 ₾" or the free word. */
-type Labels = { ge: string; eu: string; us: string; geFree: boolean };
+/** The zone prices as the customer sees them ("10 ₾" or the free word) and the country lists. */
+type Labels = {
+  ge: string;
+  euA: string;
+  euB: string;
+  us: string;
+  cis: string;
+  geFree: boolean;
+  /** Localized, comma-separated country names of the two EU tiers and the CIS zone. */
+  euACountries: string;
+  cisCountries: string;
+};
 
-const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent> => ({
+const content = ({
+  ge,
+  euA,
+  euB,
+  us,
+  cis,
+  geFree,
+  euACountries,
+  cisCountries,
+}: Labels): Record<LocaleId, LegalContent> => ({
   en: {
     title: "Delivery & Returns",
     intro: "Simple rules, no small print.",
@@ -41,8 +60,8 @@ const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent>
       {
         heading: "International delivery",
         body: [
-          `We ship to every EU country for ${eu} per order and to the USA for ${us} per order. The price appears at checkout as soon as you pick your country.`,
-          "Parcels leave Tbilisi once a week and usually arrive in 2.5–3 weeks.",
+          `European Union — ${euA} per order to ${euACountries}; ${euB} per order to every other EU country. USA — ${us} per order. ${cisCountries} — ${cis} per order. The price appears at checkout as soon as you pick your country.`,
+          "Parcels to the EU and USA leave Tbilisi once a week and usually arrive in 2.5–3 weeks.",
           "Please give a postal code and a phone number that works in the destination country — the courier needs both to deliver.",
           "International parcels are insured by the courier for up to 30 €.",
           `Somewhere else? Write to us on Instagram (${company.instagram}) and we'll find a way.`,
@@ -82,8 +101,8 @@ const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent>
       {
         heading: "საერთაშორისო მიწოდება",
         body: [
-          `ვაგზავნით ევროკავშირის ყველა ქვეყანაში (${eu} შეკვეთაზე) და აშშ-ში (${us} შეკვეთაზე). ფასი ქვეყნის არჩევისთანავე გამოჩნდება გადახდის გვერდზე.`,
-          "ამანათები თბილისიდან კვირაში ერთხელ იგზავნება და ჩვეულებრივ 2,5–3 კვირაში ჩადის.",
+          `ევროკავშირი — ${euA} შეკვეთაზე (${euACountries}), ევროკავშირის დანარჩენ ქვეყნებში ${euB} შეკვეთაზე. აშშ — ${us} შეკვეთაზე. ${cisCountries} — ${cis} შეკვეთაზე. ფასი ქვეყნის არჩევისთანავე გამოჩნდება გადახდის გვერდზე.`,
+          "ევროკავშირისა და აშშ-ს ამანათები თბილისიდან კვირაში ერთხელ იგზავნება და ჩვეულებრივ 2,5–3 კვირაში ჩადის.",
           "მიუთითეთ საფოსტო ინდექსი და ტელეფონის ნომერი, რომელიც დანიშნულების ქვეყანაში მუშაობს — კურიერს ჩასაბარებლად ორივე სჭირდება.",
           "საერთაშორისო ამანათებს კურიერი 30 ევრომდე აზღვევს.",
           `სხვა ქვეყანაში გჭირდებათ? მოგვწერეთ Instagram-ზე (${company.instagram}) და გზას ვიპოვით.`,
@@ -123,8 +142,8 @@ const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent>
       {
         heading: "Международная доставка",
         body: [
-          `Отправляем во все страны ЕС (${eu} за заказ) и в США (${us} за заказ). Цена появится при оформлении, как только вы выберете страну.`,
-          "Посылки уходят из Тбилиси раз в неделю и обычно доходят за 2,5–3 недели.",
+          `Евросоюз — ${euA} за заказ (${euACountries}), в остальные страны ЕС ${euB} за заказ. США — ${us} за заказ. ${cisCountries} — ${cis} за заказ. Цена появится при оформлении, как только вы выберете страну.`,
+          "Посылки в ЕС и США уходят из Тбилиси раз в неделю и обычно доходят за 2,5–3 недели.",
           "Укажите почтовый индекс и номер телефона, который работает в стране назначения, — курьеру нужны оба.",
           "Международные посылки застрахованы курьером на сумму до 30 €.",
           `Нужна другая страна? Напишите нам в Instagram (${company.instagram}) — что-нибудь придумаем.`,
@@ -164,8 +183,8 @@ const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent>
       {
         heading: "海外配送",
         body: [
-          `EU加盟国全域（1注文あたり${eu}）とアメリカ（1注文あたり${us}）へ配送します。国を選ぶと、ご注文画面に送料が表示されます。`,
-          "荷物はトビリシから週1回発送され、通常2.5〜3週間で到着します。",
+          `EU — ${euACountries}へは1注文あたり${euA}、その他のEU加盟国へは1注文あたり${euB}。アメリカ — 1注文あたり${us}。${cisCountries} — 1注文あたり${cis}。国を選ぶと、ご注文画面に送料が表示されます。`,
+          "EU・アメリカ向けの荷物はトビリシから週1回発送され、通常2.5〜3週間で到着します。",
           "郵便番号と、配送先の国で使える電話番号をご記入ください。配送業者のお届けに両方が必要です。",
           "海外向けの荷物は配送業者により最大30€まで保険が掛けられます。",
           `その他の国への配送は、Instagram（${company.instagram}）でご相談ください。`,
@@ -189,12 +208,18 @@ const content = ({ ge, eu, us, geFree }: Labels): Record<LocaleId, LegalContent>
   },
 });
 
-function labels(rates: ShippingRates, dict: Dictionary): Labels {
+function labels(rates: ShippingRates, dict: Dictionary, locale: LocaleId): Labels {
+  const names = (codes: readonly string[]) =>
+    codes.map((code) => countryName(code, locale)).join(", ");
   return {
     ge: deliveryAmountLabel(rates.georgia, dict),
-    eu: deliveryAmountLabel(rates.eu, dict),
+    euA: deliveryAmountLabel(rates.euA, dict),
+    euB: deliveryAmountLabel(rates.euB, dict),
     us: deliveryAmountLabel(rates.us, dict),
+    cis: deliveryAmountLabel(rates.cis, dict),
     geFree: rates.georgia === 0,
+    euACountries: names(ZONE_COUNTRIES.euA),
+    cisCountries: names(ZONE_COUNTRIES.cis),
   };
 }
 
@@ -206,6 +231,10 @@ export default async function ShippingPage({
   const { locale } = await params;
   const [dict, rates] = await Promise.all([getDictionary(locale), getShippingRates()]);
   return (
-    <LegalPage locale={locale} dict={dict} content={content(labels(rates, dict))[locale]} />
+    <LegalPage
+      locale={locale}
+      dict={dict}
+      content={content(labels(rates, dict, locale))[locale]}
+    />
   );
 }

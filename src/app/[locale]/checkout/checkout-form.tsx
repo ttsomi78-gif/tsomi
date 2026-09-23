@@ -12,7 +12,7 @@ import { deliveryAmountLabel as deliveryLabel } from "@/lib/delivery-copy";
 import {
   OTHER_COUNTRY,
   deliveryFeeTetri,
-  type CountryCode,
+  zoneForCountry,
   type ShippingRates,
 } from "@/lib/shipping";
 import { startCheckout, type CheckoutError } from "./actions";
@@ -47,7 +47,7 @@ export function CheckoutForm({
   locale: LocaleId;
   dict: Dictionary;
   rates: ShippingRates;
-  countries: { code: CountryCode; name: string }[];
+  countries: { code: string; name: string }[];
 }) {
   const { items, subtotal, hydrated, keyOf } = useCart();
   const [state, formAction, isPending] = useActionState(startCheckout, undefined);
@@ -228,10 +228,14 @@ export function CheckoutForm({
                 />
               </label>
               <p className="text-sm text-ink/45">
-                {(abroad ? dict.checkout.deliveryIntl : dict.checkout.deliveryGeorgia).replace(
-                  "{amount}",
-                  deliveryLabel(deliveryTetri, dict),
-                )}
+                {(!abroad
+                  ? dict.checkout.deliveryGeorgia
+                  : // The weekly-dispatch / 2.5–3 week promise is the courier's
+                    // EU and USA figure; elsewhere we don't quote a time.
+                    zoneForCountry(country) === "cis"
+                    ? dict.checkout.deliveryIntlOther
+                    : dict.checkout.deliveryIntl
+                ).replace("{amount}", deliveryLabel(deliveryTetri, dict))}
               </p>
             </>
           )}

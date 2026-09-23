@@ -4,10 +4,13 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { updateShippingRates, type ShippingRatesState } from "./actions";
 import { tetriToGel } from "@/lib/money";
-import type { ShippingRates } from "@/lib/shipping";
+import { ZONE_COUNTRIES, countryName, type ShippingRates } from "@/lib/shipping";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm tabular-nums focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
+
+const names = (codes: readonly string[]) =>
+  codes.map((code) => countryName(code, "en")).join(", ");
 
 const ZONES: { id: keyof ShippingRates; label: string; hint: string }[] = [
   {
@@ -16,14 +19,24 @@ const ZONES: { id: keyof ShippingRates; label: string; hint: string }[] = [
     hint: "Per order, anywhere in Georgia. 0 shows as “free” on the site.",
   },
   {
-    id: "eu",
-    label: "European Union",
-    hint: "Per order to any EU country. The courier charges ≈ 28 € for a parcel under 1 kg.",
+    id: "euA",
+    label: "EU — courier tier 1 (7.5 €/kg)",
+    hint: `${names(ZONE_COUNTRIES.euA)}. The courier charges ≈ 27.5 € for a parcel under 1 kg.`,
+  },
+  {
+    id: "euB",
+    label: "EU — every other member (8 €/kg)",
+    hint: `${names(ZONE_COUNTRIES.euB)}. ≈ 28 € under 1 kg.`,
   },
   {
     id: "us",
     label: "USA",
-    hint: "Per order to the United States. The courier charges ≈ 40 € for a parcel under 1 kg.",
+    hint: "The courier charges ≈ 40 € for a parcel under 1 kg.",
+  },
+  {
+    id: "cis",
+    label: "Russia, Kazakhstan, Kyrgyzstan",
+    hint: `${names(ZONE_COUNTRIES.cis)}. Your own flat figure per order.`,
   },
 ];
 
@@ -34,8 +47,8 @@ export function ShippingRatesForm({ rates }: { rates: ShippingRates }) {
   );
 
   return (
-    <form action={formAction} className="max-w-xl space-y-5">
-      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <form action={formAction} className="max-w-2xl space-y-5">
+      <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         {ZONES.map((zone) => (
           <label key={zone.id} className="block">
             <span className="mb-1.5 block text-[13px] font-medium text-gray-700">
@@ -53,7 +66,7 @@ export function ShippingRatesForm({ rates }: { rates: ShippingRates }) {
               />
               <span className="text-sm text-gray-500">₾ per order</span>
             </div>
-            <span className="mt-1 block text-xs text-gray-400">{zone.hint}</span>
+            <span className="mt-1 block text-xs leading-relaxed text-gray-400">{zone.hint}</span>
           </label>
         ))}
       </div>

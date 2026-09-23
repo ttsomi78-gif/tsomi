@@ -28,10 +28,14 @@ export function Hero({ dict }: { dict: Dictionary }) {
             <span className="mt-3 block text-[3.4rem] leading-none text-terracotta sm:text-7xl lg:mt-[clamp(0.4rem,1.2vh,0.75rem)] lg:text-[clamp(3rem,9.6vh,6rem)]">
               {dict.hero.highlight}
             </span>
-            <span className="mt-3 block text-4xl leading-tight tracking-wide sm:text-5xl lg:mt-[clamp(0.4rem,1.2vh,0.75rem)] lg:text-[clamp(1.9rem,4.8vh,3rem)]">
-              <span className="text-gold">{dict.hero.and}</span>{" "}
-              <span className="text-navy">{dict.hero.khinkali}</span>
-            </span>
+            {/* Some languages phrase the headline in three lines — no empty
+                fourth line with its top margin in that case. */}
+            {(dict.hero.and || dict.hero.khinkali) && (
+              <span className="mt-3 block text-4xl leading-tight tracking-wide sm:text-5xl lg:mt-[clamp(0.4rem,1.2vh,0.75rem)] lg:text-[clamp(1.9rem,4.8vh,3rem)]">
+                <span className="text-gold">{dict.hero.and}</span>{" "}
+                <span className="text-navy">{dict.hero.khinkali}</span>
+              </span>
+            )}
           </h1>
 
           <p className="mt-6 max-w-md text-lg leading-relaxed text-ink/60 lg:mt-[clamp(0.75rem,2.4vh,1.5rem)] lg:text-[clamp(0.95rem,1.8vh,1.125rem)]">
